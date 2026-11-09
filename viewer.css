@@ -5,6 +5,14 @@
   background: var(--surface, #211e1b);
 }
 
+.viewer-mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+  padding: 8px;
+  border-bottom: 1px solid var(--line, #39342e);
+}
+
 .viewer-stage {
   position: relative;
   height: clamp(375px, 48vw, 540px);
@@ -53,9 +61,10 @@
 }
 
 .viewer-rocker-marker {
+  --leader: 14px;
   position: absolute;
   z-index: 1;
-  transform: translate(calc(-100% - 14px), -50%);
+  transform: translate(calc(-100% - var(--leader)), -50%);
   padding: 5px 8px;
   border: 1px solid #a77155;
   border-radius: 5px;
@@ -73,7 +82,7 @@
   position: absolute;
   left: 100%;
   top: 50%;
-  width: 15px;
+  width: calc(var(--leader) + 1px);
   height: 1px;
   background: #8c410f;
 }
@@ -81,7 +90,7 @@
 .viewer-rocker-marker::before {
   content: "";
   position: absolute;
-  left: calc(100% + 11px);
+  left: calc(100% + var(--leader) - 3px);
   top: 50%;
   width: 7px;
   height: 7px;
@@ -90,6 +99,11 @@
   border-radius: 50%;
   background: #ffa357;
 }
+
+.viewer-rocker-marker.is-right { transform: translate(14px, -50%); }
+.viewer-rocker-marker.is-right::after { right: 100%; left: auto; }
+.viewer-rocker-marker.is-right::before { right: calc(100% + 11px); left: auto; }
+.viewer-rocker-marker.is-long { --leader: 46px; }
 
 .viewer-controls,
 .viewer-notes {
@@ -111,7 +125,8 @@
   gap: 6px;
 }
 
-.viewer-controls button {
+.viewer-controls button,
+.viewer-mode-tabs button {
   min-height: 44px;
   padding: 0 13px;
   border: 1px solid transparent;
@@ -123,8 +138,10 @@
   line-height: 1.2;
 }
 
-.viewer-controls button:not(:disabled):hover { background: #352920; color: #fff3e5; }
-.viewer-controls button[aria-pressed="true"] {
+.viewer-controls button:not(:disabled):hover,
+.viewer-mode-tabs button:hover { background: #352920; color: #fff3e5; }
+.viewer-controls button[aria-pressed="true"],
+.viewer-mode-tabs button[aria-pressed="true"] {
   border-color: #835338;
   background: #3d291d;
   color: #ffc28a;
@@ -151,7 +168,13 @@
   font-weight: 700;
 }
 
+.viewer-static .viewer-controls,
+.viewer-static #viewer-instructions { display: none; }
+
 @media (max-width: 540px) {
+  .viewer-mode-tabs { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; }
+  .viewer-mode-tabs button { grid-column: span 2; padding-inline: 4px; font-size: 12px; }
+  .viewer-mode-tabs button:nth-last-child(-n+2) { grid-column: span 3; }
   .viewer-stage { height: clamp(350px, 106vw, 410px); }
   .viewer-controls { gap: 8px; padding: 8px; }
   .viewer-presets { gap: 2px; }

@@ -1,16 +1,64 @@
+import { makeProduct } from './viewer-models.js';
+
+const modeNames = {
+  pocket: 'Screenless',
+  phone: 'Handheld',
+  mini: 'Mini tablet',
+  fold: 'Foldable',
+  clip: 'Clip mount',
+};
+const fallbackDescriptions = {
+  pocket: 'Detached Chalk Optics Puck with a smoked triple-camera window and orange record button',
+  phone: 'Chalk Optics Puck docked on the back of a graphite handheld phone',
+  mini: 'Chalk Optics Puck docked on a landscape mini tablet',
+  fold: 'Chalk Optics Puck docked on a folding display',
+  clip: 'Chalk Optics Puck secured to a woven strap with a clip mount',
+};
+
 const viewer = document.querySelector('[data-product-viewer]');
 
 if (viewer) {
   const stage = viewer.querySelector('.viewer-stage');
   const canvas = stage.querySelector('canvas');
+  const fallback = stage.querySelector('.viewer-fallback');
   const status = viewer.querySelector('.viewer-status');
+  const modes = [...viewer.querySelectorAll('[data-viewer-mode]')];
   const presets = [...viewer.querySelectorAll('[data-view]')];
   const reset = viewer.querySelector('[data-view-reset]');
   const controls = [...presets, reset].filter(Boolean);
+  let selectedMode = 'phone';
+  let showModel;
 
   canvas.tabIndex = -1;
   canvas.setAttribute('aria-hidden', 'true');
   controls.forEach((control) => { control.disabled = true; });
+
+  function selectMode(mode) {
+    if (!Object.hasOwn(modeNames, mode)) return;
+
+    selectedMode = mode;
+    for (const button of modes) {
+      button.setAttribute('aria-pressed', String(button.dataset.viewerMode === selectedMode));
+    }
+    fallback.src = `assets/chalk-v2/mode-${mode}.webp`;
+    fallback.alt = fallbackDescriptions[mode];
+    canvas.setAttribute('aria-label', `3D model of Puck in ${modeNames[mode].toLowerCase()} mode`);
+    if (showModel) showModel(mode);
+    else if (viewer.classList.contains('viewer-static')) {
+      status.textContent = `${modeNames[mode]} static preview. Interactive 3D is unavailable in this browser.`;
+    }
+  }
+
+  for (const button of modes) {
+    button.addEventListener('click', () => selectMode(button.dataset.viewerMode));
+  }
+
+  document.addEventListener('click', (event) => {
+    const link = event.target.closest?.('[data-model-link]');
+    if (link && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+      selectMode(link.dataset.modelLink);
+    }
+  });
 
   async function loadViewer() {
     try {
@@ -21,7 +69,8 @@ if (viewer) {
       const three = await import('./assets/vendor/puck-three.min.js');
       createViewer(three, context);
     } catch {
-      status.textContent = 'Static preview. Interactive 3D is unavailable in this browser.';
+      viewer.classList.add('viewer-static');
+      status.textContent = `${modeNames[selectedMode]} static preview. Interactive 3D is unavailable in this browser.`;
     }
   }
 
@@ -32,12 +81,9 @@ if (viewer) {
     renderer.toneMappingExposure = 1.14;
 
     const scene = new three.Scene();
-    const camera = new three.PerspectiveCamera(29, 1, 0.1, 50);
-    camera.position.set(0, 0.42, 15.6);
-    camera.lookAt(0, -0.10, 0);
-
-    const phone = makePhone(three);
-    scene.add(phone, makeContactShadow(three));
+    const camera = new three.PerspectiveCamera(29, 1, 0.1, 70);
+    const shadow = makeContactShadow(three);
+    scene.add(shadow);
     scene.environment = makeStudioLight(three, renderer);
     scene.environmentIntensity = 0.9;
 
@@ -55,45 +101,129 @@ if (viewer) {
     marker.hidden = true;
     stage.append(marker);
     const markerPosition = new three.Vector3();
+    const corner = new three.Vector3();
 
-    const angles = {
-      rear: { yaw: 0.40, pitch: 0.07, roll: -0.10, label: 'Rear view' },
-      side: { yaw: 1.18, pitch: 0.06, roll: -0.04, label: 'Side view. Volume rocker highlighted on the handset rail.' },
-      front: { yaw: Math.PI - 0.31, pitch: 0.06, roll: 0.07, label: 'Front view' },
-    };
+    const rear = { yaw: 0.36, pitch: 0.08, roll: -0.07 };
+    const front = { yaw: Math.PI - 0.31, pitch: 0.06, roll: 0.07 };
+    const target = { ...rear };
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const target = { ...angles.rear };
-    phone.rotation.set(target.pitch, target.yaw, target.roll, 'YXZ');
+    const products = new Map();
 
+    let model;
     let activeView = 'rear';
     let frame = 0;
     let pointer = null;
     let contextLost = false;
 
+    function sideLabel() {
+      return selectedMode === 'clip' ? 'Clip side' : 'Back';
+    }
+
     function updateControls() {
+      const standalone = selectedMode === 'pocket' || selectedMode === 'clip';
       for (const button of presets) {
         button.setAttribute('aria-pressed', String(button.dataset.view === activeView));
+        if (button.dataset.view === 'rear') button.textContent = standalone ? 'Face' : 'Rear';
+        if (button.dataset.view === 'front') button.textContent = standalone ? sideLabel() : 'Front';
       }
     }
 
+    function viewLabel(view) {
+      const standalone = selectedMode === 'pocket' || selectedMode === 'clip';
+      if (view === 'side') return 'Volume rocker highlighted on Puck’s edge.';
+      if (view === 'front') return standalone ? `${sideLabel()} view.` : 'Front view.';
+      return standalone ? 'Face view.' : 'Rear view.';
+    }
+
     function moveTo(view) {
-      const angle = angles[view];
+      const angle = { rear, side: model.rockerView, front }[view];
       if (!angle) return;
 
-      const currentYaw = phone.rotation.y;
+      const currentYaw = model.group.rotation.y;
       const delta = three.MathUtils.euclideanModulo(angle.yaw - currentYaw + Math.PI, 2 * Math.PI) - Math.PI;
       Object.assign(target, angle, { yaw: currentYaw + delta });
       activeView = view;
       updateControls();
-      status.textContent = angle.label;
+      status.textContent = `${modeNames[selectedMode]} model. ${viewLabel(view)}`;
       requestFrame();
+    }
+
+    function switchModel(mode) {
+      try {
+        if (!products.has(mode)) products.set(mode, makeProduct(three, mode));
+      } catch {
+        setInteractive(false);
+        status.textContent = `${modeNames[mode]} static preview. This model could not load.`;
+        return;
+      }
+
+      if (model) scene.remove(model.group);
+      model = products.get(mode);
+      scene.add(model.group);
+      model.group.rotation.set(rear.pitch, rear.yaw, rear.roll, 'YXZ');
+      shadow.position.set(model.width * 0.035, -model.height / 2 - 0.12, 0);
+      shadow.scale.set(model.width / 2.96, Math.max(0.7, model.width / 3.6), 1);
+      moveTo('rear');
+      setInteractive(!contextLost);
+      if (contextLost) status.textContent = `${modeNames[mode]} static preview while the 3D view reconnects.`;
+    }
+
+    function frameModel(rotation) {
+      const tanHalfFov = Math.tan(camera.fov * Math.PI / 360);
+      const horizontal = tanHalfFov * camera.aspect / 1.13;
+      const vertical = tanHalfFov / 1.20;
+      const halfWidth = model.width / 2;
+      const halfHeight = model.height / 2;
+      const halfDepth = (model.depth || 0.7) / 2;
+      const eyeTilt = 0.055;
+      const sin = Math.sin(eyeTilt);
+      const cos = Math.cos(eyeTilt);
+      let distance = halfDepth + Math.max(halfWidth / horizontal, halfHeight / vertical);
+
+      // Fit the rotated bounding corners as well as the starting silhouette.
+      // This keeps a wide tablet inside a narrow viewport without zooming in on edge-on views.
+      for (const x of [-halfWidth, halfWidth]) {
+        for (const y of [-halfHeight, halfHeight]) {
+          for (const z of [-halfDepth, halfDepth]) {
+            corner.set(x, y, z).applyEuler(rotation);
+            const screenY = corner.y * cos - corner.z * sin;
+            const screenZ = corner.y * sin + corner.z * cos;
+            distance = Math.max(distance, screenZ + Math.max(
+              Math.abs(corner.x) / horizontal,
+              Math.abs(screenY) / vertical,
+            ));
+          }
+        }
+      }
+
+      camera.position.set(0, distance * sin, distance * cos);
+      camera.lookAt(0, 0, 0);
+    }
+
+    function positionMarker(rotation) {
+      marker.hidden = activeView !== 'side' || Math.max(
+        Math.abs(rotation.y - target.yaw),
+        Math.abs(rotation.x - target.pitch),
+      ) > 0.21;
+      if (marker.hidden) return;
+
+      model.rockerAnchor.getWorldPosition(markerPosition).project(camera);
+      const x = (markerPosition.x + 1) * 50;
+      const y = (1 - markerPosition.y) * 50;
+      const leftSpace = stage.clientWidth * x / 100;
+      const rightSpace = stage.clientWidth - leftSpace;
+      const isRight = rightSpace > 118 && (x >= 50 || leftSpace < 118);
+      marker.classList.toggle('is-right', isRight);
+      marker.classList.toggle('is-long', !isRight && x > 65 && leftSpace > 155);
+      marker.style.left = `${x}%`;
+      marker.style.top = `${y}%`;
     }
 
     function render() {
       frame = 0;
-      if (contextLost) return;
+      if (contextLost || !model) return;
 
-      const rotation = phone.rotation;
+      const rotation = model.group.rotation;
       const atTarget = Math.max(
         Math.abs(target.yaw - rotation.y),
         Math.abs(target.pitch - rotation.x),
@@ -105,14 +235,9 @@ if (viewer) {
       rotation.y += (target.yaw - rotation.y) * blend;
       rotation.z += (target.roll - rotation.z) * blend;
 
+      frameModel(rotation);
       renderer.render(scene, camera);
-      marker.hidden = activeView !== 'side' || Math.abs(rotation.y - target.yaw) > 0.30;
-      if (!marker.hidden) {
-        markerPosition.set(-1.523, 0.83, 0.01);
-        phone.localToWorld(markerPosition).project(camera);
-        marker.style.left = `${(markerPosition.x + 1) * 50}%`;
-        marker.style.top = `${(1 - markerPosition.y) * 50}%`;
-      }
+      positionMarker(rotation);
       if (!atTarget && blend < 1) requestFrame();
     }
 
@@ -165,7 +290,7 @@ if (viewer) {
 
     function endDrag(event) {
       if (!pointer || pointer.id !== event.pointerId) return;
-      if (pointer.moved) status.textContent = 'Custom view';
+      if (pointer.moved) status.textContent = `${modeNames[selectedMode]} model. Custom view.`;
       pointer = null;
       canvas.classList.remove('is-dragging');
     }
@@ -193,7 +318,7 @@ if (viewer) {
       beginCustomView();
       target.yaw += rotation[0];
       target.pitch = three.MathUtils.clamp(target.pitch + rotation[1], -0.72, 0.72);
-      status.textContent = 'Custom view';
+      status.textContent = `${modeNames[selectedMode]} model. Custom view.`;
       requestFrame();
     });
 
@@ -202,6 +327,7 @@ if (viewer) {
 
     function setInteractive(interactive) {
       stage.classList.toggle('is-ready', interactive);
+      viewer.classList.toggle('viewer-static', !interactive);
       controls.forEach((control) => { control.disabled = !interactive; });
       canvas.tabIndex = interactive ? 0 : -1;
       if (interactive) canvas.removeAttribute('aria-hidden');
@@ -218,16 +344,14 @@ if (viewer) {
     canvas.addEventListener('webglcontextrestored', () => {
       contextLost = false;
       scene.environment = makeStudioLight(three, renderer);
-      setInteractive(true);
-      status.textContent = 'Interactive view restored.';
+      switchModel(selectedMode);
       resize();
     });
 
+    switchModel(selectedMode);
+    showModel = switchModel;
     new ResizeObserver(resize).observe(stage);
     resize();
-    updateControls();
-    setInteractive(true);
-    status.textContent = 'Rear view';
   }
 
   if ('IntersectionObserver' in window) {
@@ -241,169 +365,6 @@ if (viewer) {
     loadViewer();
   }
 }
-
-function roundedShape(three, width, height, radius) {
-  const x = width / 2;
-  const y = height / 2;
-  const shape = new three.Shape();
-  shape.moveTo(-x + radius, -y);
-  shape.lineTo(x - radius, -y);
-  shape.quadraticCurveTo(x, -y, x, -y + radius);
-  shape.lineTo(x, y - radius);
-  shape.quadraticCurveTo(x, y, x - radius, y);
-  shape.lineTo(-x + radius, y);
-  shape.quadraticCurveTo(-x, y, -x, y - radius);
-  shape.lineTo(-x, -y + radius);
-  shape.quadraticCurveTo(-x, -y, -x + radius, -y);
-  return shape;
-}
-
-function makePhone(three) {
-  const phone = new three.Group();
-  const standard = (color, roughness, metalness = 0) =>
-    new three.MeshStandardMaterial({ color, roughness, metalness });
-
-  const graphite = standard(0x333437, 0.49, 0.77);
-  const graphiteBack = standard(0x2f3030, 0.79, 0.26);
-  const thinKey = standard(0x666663, 0.39, 0.77);
-  const chalk = standard(0xeee2cd, 0.61, 0.06);
-  const seam = standard(0x191819, 0.6, 0.35);
-  const smoke = new three.MeshPhysicalMaterial({
-    color: 0x151416, roughness: 0.19, metalness: 0.48, clearcoat: 0.6, clearcoatRoughness: 0.23,
-  });
-  const lensRim = standard(0x353337, 0.32, 0.81);
-  const lensWall = standard(0x1c1c24, 0.26, 0.46);
-  const lensGlass = new three.MeshPhysicalMaterial({
-    color: 0x262739, roughness: 0.14, metalness: 0.35, clearcoat: 1, clearcoatRoughness: 0.09,
-  });
-  const flash = standard(0xffeac2, 0.32, 0.14);
-  const orange = standard(0xd14e05, 0.52, 0.16);
-  const orangeRidge = standard(0xf35c06, 0.56, 0.08);
-  const pinLight = new three.MeshBasicMaterial({ color: 0xffac29, toneMapped: false });
-  const holes = new three.MeshBasicMaterial({ color: 0x1f1b18 });
-
-  function mesh(geometry, material, x, y, z) {
-    const piece = new three.Mesh(geometry, material);
-    piece.position.set(x, y, z);
-    phone.add(piece);
-    return piece;
-  }
-
-  function plate(width, height, thickness, radius, bevel, material, x = 0, y = 0, z = 0) {
-    const depth = thickness - bevel * 2;
-    const outline = roundedShape(three, width - bevel * 2, height - bevel * 2, radius - bevel);
-    const geometry = new three.ExtrudeGeometry(outline, {
-      depth, steps: 1, curveSegments: 8, bevelEnabled: true, bevelThickness: bevel,
-      bevelSize: bevel, bevelSegments: 3,
-    });
-    geometry.translate(0, 0, -depth / 2);
-    return mesh(geometry, material, x, y, z);
-  }
-
-  function disk(radius, depth, material, x, y, z, segments = 32) {
-    const geometry = new three.CylinderGeometry(radius, radius, depth, segments);
-    geometry.rotateX(Math.PI / 2);
-    return mesh(geometry, material, x, y, z);
-  }
-
-  plate(2.96, 6.18, 0.35, 0.31, 0.068, graphite);
-  plate(2.87, 6.09, 0.058, 0.28, 0.020, graphiteBack, 0, 0, 0.153);
-  plate(2.87, 6.09, 0.064, 0.28, 0.022, seam, 0, 0, -0.159);
-
-  const screen = makeScreen(three, 2.67, 5.86);
-  screen.position.z = -0.195;
-  screen.rotation.y = Math.PI;
-  phone.add(screen);
-  plate(0.36, 0.024, 0.009, 0.011, 0.003, seam, 0, 2.98, -0.186);
-
-  // The camera face looks toward +Z. Its left rail carries the volume rocker.
-  const rockerSlot = plate(0.130, 0.928, 0.023, 0.063, 0.008, seam, -1.471, 0.83, 0.01);
-  rockerSlot.rotation.y = -Math.PI / 2;
-  const rocker = plate(0.100, 0.850, 0.041, 0.047, 0.014, thinKey, -1.492, 0.83, 0.01);
-  rocker.rotation.y = -Math.PI / 2;
-
-  const coreY = 1.98;
-  plate(2.84, 1.39, 0.29, 0.25, 0.080, graphite, 0, coreY, 0.309);
-  plate(2.72, 1.27, 0.055, 0.217, 0.019, chalk, 0, coreY, 0.452);
-  plate(1.49, 1.13, 0.029, 0.165, 0.009, smoke, -0.568, coreY, 0.485);
-
-  for (const x of [-1.006, -0.576, -0.146]) {
-    const y = coreY - 0.095;
-    disk(0.177, 0.035, lensRim, x, y, 0.511);
-    disk(0.150, 0.018, lensWall, x, y, 0.536);
-    const lens = new three.SphereGeometry(0.132, 32, 14, 0, Math.PI * 2, 0, Math.PI / 2);
-    lens.rotateX(Math.PI / 2);
-    lens.scale(1, 1, 0.31);
-    mesh(lens, lensGlass, x, y, 0.544);
-  }
-
-  disk(0.073, 0.022, lensWall, -0.127, coreY + 0.350, 0.506);
-  disk(0.063, 0.019, flash, -0.127, coreY + 0.350, 0.519);
-  disk(0.032, 0.010, pinLight, 1.050, coreY + 0.415, 0.482, 20);
-
-  const micHole = new three.CylinderGeometry(0.016, 0.016, 0.003, 12);
-  micHole.rotateX(Math.PI / 2);
-  for (let row = 0; row < 3; row++) {
-    for (let column = 0; column < 6; column++) {
-      mesh(micHole, holes, 0.301 + column * 0.071, coreY - 0.147 + row * 0.071, 0.482);
-    }
-  }
-
-  const buttonX = 1.027;
-  const buttonY = coreY - 0.093;
-  disk(0.253, 0.026, seam, buttonX, buttonY, 0.491);
-  disk(0.229, 0.049, orange, buttonX, buttonY, 0.516);
-  const slope = Math.PI / 4;
-  for (let index = -6; index <= 6; index++) {
-    const offset = index * 0.027;
-    const length = 2 * Math.sqrt(0.211 ** 2 - offset ** 2);
-    const ridge = mesh(
-      new three.BoxGeometry(length, 0.009, 0.005),
-      orangeRidge, buttonX - Math.sin(slope) * offset, buttonY + Math.cos(slope) * offset, 0.542,
-    );
-    ridge.rotation.z = slope;
-  }
-
-  return phone;
-}
-
-function makeScreen(three, width, height) {
-  const art = document.createElement('canvas');
-  art.width = 512;
-  art.height = 1024;
-  const context = art.getContext('2d');
-  const background = context.createLinearGradient(50, 0, 470, 1024);
-  background.addColorStop(0, '#10151b');
-  background.addColorStop(0.54, '#232227');
-  background.addColorStop(1, '#0b0c11');
-  context.fillStyle = background;
-  context.fillRect(0, 0, art.width, art.height);
-
-  const glow = context.createRadialGradient(420, 700, 12, 420, 700, 405);
-  glow.addColorStop(0, '#f58132');
-  glow.addColorStop(0.40, '#984323');
-  glow.addColorStop(0.71, '#3b261f');
-  glow.addColorStop(1, '#171821');
-  context.fillStyle = glow;
-  context.beginPath();
-  context.moveTo(-40, 693);
-  context.bezierCurveTo(65, 485, 327, 348, 568, 475);
-  context.lineTo(568, 945);
-  context.bezierCurveTo(261, 879, 91, 986, -40, 1098);
-  context.closePath();
-  context.fill();
-
-  const texture = new three.CanvasTexture(art);
-  texture.colorSpace = three.SRGBColorSpace;
-  const geometry = new three.ShapeGeometry(roundedShape(three, width, height, 0.22), 12);
-  const positions = geometry.getAttribute('position');
-  const uv = geometry.getAttribute('uv');
-  for (let index = 0; index < positions.count; index++) {
-    uv.setXY(index, positions.getX(index) / width + 0.5, positions.getY(index) / height + 0.5);
-  }
-  return new three.Mesh(geometry, new three.MeshBasicMaterial({ map: texture, toneMapped: false }));
-}
-
 function makeStudioLight(three, renderer) {
   const room = new three.Scene();
   room.background = new three.Color(0x888079);

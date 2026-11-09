@@ -3,19 +3,19 @@ const modes = {
     title: 'The pocket core.',
     description: 'Take a call or capture a voice note with earbuds and a physical button. The core stays connected while the screen stays home.',
     tag: 'Screenless carry',
-    alt: 'Detached Chalk Optics Puck with a smoked triple-camera window and orange record button',
+    alt: 'Detached Chalk Optics Puck with three cameras, an orange record button, and a slim rocker on its top edge',
   },
   phone: {
     title: 'A phone in your hand.',
-    description: 'Dock the core into a handheld touchscreen for texting, directions, and the apps you reach for on the move.',
+    description: 'The Puck sits in a shallow recess inside the handset’s rails, with its volume rocker exposed along the upper edge.',
     tag: 'Handheld',
-    alt: 'Rear view of the graphite handset with its thin side volume rocker and docked Chalk Optics core',
+    alt: 'Rear view of Chalk Optics seated inside the graphite handset rails',
   },
   mini: {
     title: 'More room to work.',
-    description: 'Move the same core into a mini-tablet display and give your drafts, reading, and video more room.',
+    description: 'The same handheld-width core docks behind the wider mini tablet. See the screen and rear mount side by side.',
     tag: 'Mini tablet',
-    alt: 'Graphite mini tablet with the Chalk Optics Puck docked on the back',
+    alt: 'Front and rear views of the same graphite mini tablet, with the Chalk Optics Puck seated on the back',
   },
   fold: {
     title: 'Open up a bigger screen.',
@@ -25,9 +25,9 @@ const modes = {
   },
   clip: {
     title: 'Clip it on and head out.',
-    description: 'Attach the core to a bag strap or belt with a clip that uses the same mount as the display modules.',
+    description: 'Clip the Puck upright to a bag strap, with the cameras above the record button and the volume rocker on the exposed edge.',
     tag: 'Clip attachment',
-    alt: 'Chalk Optics Puck attached to a charcoal strap with a graphite clip',
+    alt: 'Chalk Optics Puck mounted vertically on a charcoal strap',
   },
 };
 
@@ -38,6 +38,7 @@ const modeIndex = document.querySelector('#mode-index');
 const modeTitle = document.querySelector('#mode-title');
 const modeDescription = document.querySelector('#mode-description');
 const modeTag = document.querySelector('#mode-tag');
+const modeInspector = document.querySelector('[data-model-link]');
 
 function selectMode(index) {
   const selected = modeTabs[index];
@@ -50,7 +51,7 @@ function selectMode(index) {
   });
 
   modePanel.setAttribute('aria-labelledby', selected.id);
-  modeImage.src = `assets/chalk/mode-${selected.dataset.mode}.webp`;
+  modeImage.src = `assets/chalk-v2/mode-${selected.dataset.mode}.webp`;
   modeImage.alt = mode.alt;
   modeIndex.textContent = [index + 1, modeTabs.length]
     .map((number) => String(number).padStart(2, '0'))
@@ -58,6 +59,7 @@ function selectMode(index) {
   modeTitle.textContent = mode.title;
   modeDescription.textContent = mode.description;
   modeTag.textContent = mode.tag;
+  modeInspector.dataset.modelLink = selected.dataset.mode;
 }
 
 modeTabs.forEach((tab, index) => {

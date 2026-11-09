@@ -8,10 +8,10 @@
   <title>Puck — One phone. Any form.</title>
   <link rel="icon" href="assets/puck-mark.svg?v=chalk" type="image/svg+xml">
   <link rel="preload" href="assets/space-grotesk.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="styles.css?v=chalk">
-  <link rel="stylesheet" href="viewer.css">
-  <script defer src="script.js?v=chalk"></script>
-  <script type="module" src="viewer.js"></script>
+  <link rel="stylesheet" href="styles.css?v=chalk-assemblies">
+  <link rel="stylesheet" href="viewer.css?v=chalk-assemblies">
+  <script defer src="script.js?v=chalk-assemblies"></script>
+  <script type="module" src="viewer.js?v=chalk-assemblies"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -49,7 +49,7 @@
       </div>
       <figure class="hero-figure">
         <div class="hero-image">
-          <img src="assets/chalk/hero.webp" alt="Chalk Optics Puck with its black triple-camera window and orange record button, shown docked on a graphite handset and detached" width="1536" height="1024" fetchpriority="high">
+          <img src="assets/chalk-v2/hero.webp" alt="Chalk Optics Puck with its edge-mounted volume rocker, shown seated in a graphite handset and detached" width="1536" height="1024" fetchpriority="high">
         </div>
         <figcaption><span><span class="caption-dot"></span> Chalk Optics</span><a href="#product-viewer">View in 3D <span aria-hidden="true">↗</span></a></figcaption>
       </figure>
@@ -95,7 +95,7 @@
         </div>
         <div class="mode-panel" id="mode-panel" role="tabpanel" aria-labelledby="mode-tab-pocket" tabindex="0">
           <div class="mode-visual">
-            <img id="mode-image" src="assets/chalk/mode-pocket.webp" alt="Detached Chalk Optics Puck with a smoked triple-camera window and orange record button" width="1080" height="720" loading="lazy">
+            <img id="mode-image" src="assets/chalk-v2/mode-pocket.webp" alt="Detached Chalk Optics Puck with three cameras, an orange record button, and a slim rocker on its top edge" width="1080" height="720" loading="lazy">
             <span class="mode-caption">Concept render</span>
           </div>
           <div class="mode-content">
@@ -104,7 +104,10 @@
               <h3 id="mode-title">The pocket core.</h3>
               <p id="mode-description">Take a call or capture a voice note with earbuds and a physical button. The core stays connected while the screen stays home.</p>
             </div>
-            <span class="mode-tag" id="mode-tag">Screenless carry</span>
+            <div class="mode-actions">
+              <span class="mode-tag" id="mode-tag">Screenless carry</span>
+              <a class="mode-inspect" href="#product-viewer" data-model-link="pocket">Inspect in 3D <span aria-hidden="true">↗</span></a>
+            </div>
           </div>
         </div>
       </div>
@@ -112,17 +115,24 @@
 
     <section class="viewer-section section-shell" id="product-viewer" data-product-viewer aria-labelledby="viewer-title">
       <div class="section-heading">
-        <p class="section-kicker">Interactive model</p>
+        <p class="section-kicker">Interactive models</p>
         <h2 id="viewer-title">Turn it around.</h2>
-        <p>Drag to rotate the phone. Choose Volume rocker for a close look at the thin control on the handset’s left rail.</p>
+        <p>Pick a configuration and drag to turn it. Choose Volume rocker to see the thin control on the Puck’s own edge.</p>
       </div>
       <div class="viewer-shell">
+        <div class="viewer-mode-tabs" role="group" aria-label="3D configuration">
+          <button type="button" data-viewer-mode="pocket" aria-pressed="false">Screenless</button>
+          <button type="button" data-viewer-mode="phone" aria-pressed="true">Handheld</button>
+          <button type="button" data-viewer-mode="mini" aria-pressed="false">Mini tablet</button>
+          <button type="button" data-viewer-mode="fold" aria-pressed="false">Foldable</button>
+          <button type="button" data-viewer-mode="clip" aria-pressed="false">Clip mount</button>
+        </div>
         <div class="viewer-stage">
-          <img class="viewer-fallback" src="assets/chalk/mode-phone.webp" alt="Rear view of the graphite handset with its thin side volume rocker and docked Chalk Optics core" width="1080" height="720" loading="lazy">
+          <img class="viewer-fallback" src="assets/chalk-v2/mode-phone.webp" alt="Rear view of Chalk Optics seated inside the graphite handset rails" width="1080" height="720" loading="lazy">
           <canvas id="puck-canvas" tabindex="-1" aria-hidden="true" aria-label="3D model of the docked Chalk Optics phone" aria-describedby="viewer-instructions"></canvas>
         </div>
         <div class="viewer-controls">
-          <div class="viewer-presets" role="group" aria-label="Phone view">
+          <div class="viewer-presets" role="group" aria-label="Model angle">
             <button type="button" data-view="rear" aria-pressed="true" disabled>Rear</button>
             <button type="button" data-view="side" aria-pressed="false" disabled>Volume rocker</button>
             <button type="button" data-view="front" aria-pressed="false" disabled>Front</button>
@@ -156,7 +166,7 @@
     <p>Puck is designed around a single home for your compute, storage, battery, and cellular connection. Displays and mounts attach around it.</p>
   </div>
   <figure class="core-figure">
-    <img src="assets/chalk/core-detail.webp" alt="Close-up of the orange record button, microphone perforations, and smooth graphite sidewall" width="1080" height="720" loading="lazy" decoding="async">
+    <img src="assets/chalk-v2/core-detail.webp" alt="Close-up of the orange record button, microphone perforations, and thin volume rocker on the Puck edge" width="1080" height="720" loading="lazy" decoding="async">
     <figcaption>Industrial design concept</figcaption>
   </figure>
   <dl class="core-specs">
@@ -170,7 +180,7 @@
     </div>
     <div>
       <dt>The control</dt>
-      <dd>The orange record button stays with the core. A slim rocker on the handset rail handles volume when docked.</dd>
+      <dd>The orange record button and slim edge-mounted volume rocker both stay with the Puck.</dd>
     </div>
   </dl>
 </section>
