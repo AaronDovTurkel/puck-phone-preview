@@ -1,98 +1,60 @@
-const CORE = { width: 2.76, height: 1.34, depth: 0.29, radius: 0.24 };
-const PHONE = { width: 2.96, height: 6.18, depth: 0.35, radius: 0.31 };
-const TABLET = { width: 7.0, height: 4.92, depth: 0.33, radius: 0.30 };
-const HALF = { width: 2.96, height: 6.18, depth: 0.27, radius: 0.24 };
-const HANDHELD_DOCK = { x: 0, y: 1.98 };
-const TABLET_DOCK = { x: 0, y: 1.52 };
-const FOLD_DOCK = { x: 0.59, y: 1.35, vertical: true };
-const DOCK_DEPTH = 0.072;
-const PIN_ROW_Y = -0.065;
-const PIN_POSITIONS = Array.from({ length: 8 }, (_, index) => (index - 3.5) * 0.145);
+const BODY = { width: 2.76, height: 1.34, depth: 0.29, radius: 0.24 };
+const WINDOW = { width: 1.46, height: 1.08, radius: 0.16, x: -0.553 };
+const PIN_ROW_Y = -0.215;
+const LENS_Y = -0.083;
+const LENS_X = [-0.982, -0.559, -0.136];
 
-export function makeProduct(three, mode) {
+export function makePuck(three) {
   const group = new three.Group();
-  const assembly = new three.Group();
   const materials = makeMaterials(three);
-  const { core, rockerAnchor, connectorAnchor } = makeCore(three, materials);
-  group.add(assembly);
+  const pocket = roundedShape(three, 0.527, 0.100, 0.044, 0, PIN_ROW_Y);
+  plate(three, group, materials.graphite, BODY.width, BODY.height, BODY.depth,
+    BODY.radius, 0.040, [0, 0, 0], [pocket]);
 
-  let width = CORE.width;
-  let height = CORE.height + 0.025;
-  let depth = 0.40;
-  let rockerView = { yaw: -0.19, pitch: 0.66, roll: 0.025 };
-  const connectorView = { yaw: Math.PI - 0.22, pitch: -0.12, roll: 0.035 };
+  makeFace(three, group, materials);
+  const rockerAnchor = makeRocker(three, group, materials);
+  const connectorAnchor = makeConnector(three, group, materials);
 
-  switch (mode) {
-    case 'phone': {
-      const shell = makeShell(three, materials, PHONE, { dock: HANDHELD_DOCK });
-      mountCore(three, materials, shell, core, PHONE.depth, HANDHELD_DOCK);
-      assembly.add(shell);
-      ({ width, height } = PHONE);
-      depth = 0.71;
-      assembly.position.z = -0.162;
-      break;
-    }
-    case 'mini': {
-      const shell = makeShell(three, materials, TABLET, { dock: TABLET_DOCK });
-      mountCore(three, materials, shell, core, TABLET.depth, TABLET_DOCK);
-      assembly.add(shell);
-      ({ width, height } = TABLET);
-      depth = 0.69;
-      assembly.position.z = -0.162;
-      break;
-    }
-    case 'fold':
-      makeFold(three, materials, assembly, core);
-      width = 6.05;
-      height = HALF.height;
-      depth = 0.83;
-      assembly.position.z = 0.29;
-      rockerView = { yaw: -0.82, pitch: 0.14, roll: 0.02 };
-      break;
-    case 'clip':
-      makeClip(three, materials, assembly, core);
-      width = CORE.height + 0.025;
-      height = 4.36;
-      depth = 0.73;
-      assembly.position.set(-0.009, 0, -0.075);
-      rockerView = { yaw: -0.73, pitch: 0.13, roll: 0.03 };
-      break;
-    case 'pocket':
-    default:
-      assembly.add(core);
-      assembly.position.set(0, -0.009, -0.054);
-  }
-
-  return { group, rockerAnchor, connectorAnchor, width, height, depth, rockerView, connectorView };
+  return {
+    group,
+    rockerAnchor,
+    connectorAnchor,
+    width: BODY.width,
+    height: BODY.height + 0.025,
+    depth: 0.34,
+    rockerView: { yaw: -0.23, pitch: 0.78, roll: 0.015 },
+    connectorView: { yaw: Math.PI + 0.24, pitch: -0.24, roll: -0.035 },
+  };
 }
 
 function makeMaterials(three) {
-  const standard = (color, roughness, metalness = 0) =>
+  const metal = (color, roughness, metalness = 0) =>
     new three.MeshStandardMaterial({ color, roughness, metalness });
 
   return {
-    graphite: standard(0x333437, 0.49, 0.77),
-    graphiteBack: standard(0x2f3030, 0.79, 0.26),
-    seam: standard(0x191819, 0.60, 0.35),
-    thinKey: standard(0x62625f, 0.39, 0.77),
-    chalk: standard(0xeee2cd, 0.61, 0.06),
+    graphite: metal(0x37383b, 0.48, 0.66),
+    shadow: metal(0x171618, 0.79),
+    rocker: metal(0x545457, 0.44, 0.72),
+    chalk: metal(0xeedfc9, 0.58, 0.06),
     smoke: new three.MeshPhysicalMaterial({
-      color: 0x151416, roughness: 0.19, metalness: 0.48, clearcoat: 0.6, clearcoatRoughness: 0.23,
+      color: 0x0c0d11, roughness: 0.18, metalness: 0.24, clearcoat: 0.74, clearcoatRoughness: 0.17,
     }),
-    lensRim: standard(0x353337, 0.32, 0.81),
-    lensWall: standard(0x1c1c24, 0.26, 0.46),
+    outerRing: metal(0x2b2b31, 0.36, 0.74),
+    innerRing: metal(0x11121b, 0.29, 0.53),
     lensGlass: new three.MeshPhysicalMaterial({
-      color: 0x262739, roughness: 0.14, metalness: 0.35, clearcoat: 1, clearcoatRoughness: 0.09,
+      color: 0xffffff, vertexColors: true, roughness: 0.14, metalness: 0.28,
+      clearcoat: 1, clearcoatRoughness: 0.09, ior: 1.53,
     }),
-    flash: standard(0xffeac2, 0.32, 0.14),
-    orange: standard(0xd14e05, 0.52, 0.16),
-    orangeRidge: standard(0xf35c06, 0.56, 0.08),
-    pinLight: new three.MeshBasicMaterial({ color: 0xffac29, toneMapped: false }),
-    holes: new three.MeshBasicMaterial({ color: 0x1f1b18 }),
-    gold: standard(0xe5a845, 0.32, 0.69),
-    pinCap: standard(0xf5c86a, 0.27, 0.55),
-    strap: standard(0x33312f, 1),
-    clip: standard(0x3d3d3b, 0.46, 0.62),
+    flash: metal(0xd3c4a8, 0.34, 0.38),
+    flashCenter: metal(0xf3db9c, 0.39),
+    keyWell: metal(0xb78c6a, 0.50, 0.06),
+    orange: metal(0xcc4604, 0.48, 0.12),
+    orangeRidge: metal(0xec650c, 0.46, 0.06),
+    indicatorBezel: metal(0x8a4d1a, 0.44, 0.35),
+    indicator: new three.MeshBasicMaterial({ color: 0xffac27, toneMapped: false }),
+    indicatorCenter: new three.MeshBasicMaterial({ color: 0xffe3a6, toneMapped: false }),
+    gold: metal(0xb87521, 0.39, 0.76),
+    pinCap: metal(0xf4c464, 0.27, 0.52),
   };
 }
 
@@ -114,6 +76,24 @@ function roundedShape(three, width, height, radius, x = 0, y = 0) {
   return shape;
 }
 
+function circle(three, radius, x = 0, y = 0) {
+  const shape = new three.Shape();
+  shape.absarc(x, y, radius, 0, Math.PI * 2, false);
+  return shape;
+}
+
+function pinhole(three, x, y) {
+  const shape = new three.Shape();
+  const radius = 0.017;
+  shape.moveTo(x + radius, y);
+  for (let index = 1; index < 14; index++) {
+    const angle = index / 14 * Math.PI * 2;
+    shape.lineTo(x + radius * Math.cos(angle), y + radius * Math.sin(angle));
+  }
+  shape.closePath();
+  return shape;
+}
+
 function mesh(three, parent, geometry, material, position) {
   const piece = new three.Mesh(geometry, material);
   piece.position.set(...position);
@@ -121,260 +101,179 @@ function mesh(three, parent, geometry, material, position) {
   return piece;
 }
 
-function plate(three, parent, material, width, height, thickness, radius, bevel, position = [0, 0, 0], cutout) {
+function extrude(three, parent, material, shape, thickness, bevel, position) {
   const depth = thickness - bevel * 2;
-  const outline = roundedShape(three, width - bevel * 2, height - bevel * 2, radius - bevel);
-  if (cutout) outline.holes.push(cutout);
-  const geometry = new three.ExtrudeGeometry(outline, {
-    depth, steps: 1, curveSegments: 8, bevelEnabled: true, bevelThickness: bevel,
-    bevelSize: bevel, bevelSegments: 3,
+  const geometry = new three.ExtrudeGeometry(shape, {
+    depth, steps: 1, curveSegments: 14, bevelEnabled: true, bevelThickness: bevel,
+    bevelSize: bevel, bevelSegments: 4,
   });
   geometry.translate(0, 0, -depth / 2);
+  smoothBevel(three, geometry, thickness / 2);
   return mesh(three, parent, geometry, material, position);
 }
 
-function disk(three, parent, material, radius, depth, position, segments = 32) {
+function smoothBevel(three, geometry, capZ) {
+  // ExtrudeGeometry duplicates triangle vertices. Share wall normals by location
+  // so the anodized edges reflect continuously while the face stays planar.
+  const positions = geometry.getAttribute('position');
+  const normals = geometry.getAttribute('normal');
+  const edges = new Map();
+  const vertexNormals = [];
+  const faceNormal = new three.Vector3();
+  for (let index = 0; index < positions.count; index++) {
+    const z = positions.getZ(index);
+    if (Math.abs(z) >= capZ - 0.00001) {
+      normals.setXYZ(index, 0, 0, Math.sign(z));
+      continue;
+    }
+    const key = `${positions.getX(index)},${positions.getY(index)},${z}`;
+    if (!edges.has(key)) edges.set(key, new three.Vector3());
+    const normal = edges.get(key);
+    vertexNormals[index] = normal;
+    faceNormal.fromBufferAttribute(normals, index);
+    normal.add(faceNormal);
+  }
+  for (const normal of edges.values()) normal.normalize();
+  vertexNormals.forEach(({ x, y, z }, index) => normals.setXYZ(index, x, y, z));
+}
+
+function plate(three, parent, material, width, height, thickness, radius, bevel, position, cutouts = []) {
+  const shape = roundedShape(three, width - bevel * 2, height - bevel * 2, radius - bevel);
+  shape.holes.push(...cutouts);
+  return extrude(three, parent, material, shape, thickness, bevel, position);
+}
+
+function disk(three, parent, material, radius, depth, position, segments = 40) {
   const geometry = new three.CylinderGeometry(radius, radius, depth, segments);
   geometry.rotateX(Math.PI / 2);
   return mesh(three, parent, geometry, material, position);
 }
 
-function makeCore(three, m) {
-  const core = new three.Group();
-  const connectorPocket = roundedShape(three, 1.35, 0.285, 0.115, 0, PIN_ROW_Y);
-  plate(three, core, m.graphite, CORE.width, CORE.height, CORE.depth, CORE.radius, 0.068, [0, 0, 0], connectorPocket);
-  plate(three, core, m.chalk, 2.66, 1.23, 0.055, 0.205, 0.018, [0, 0, 0.134]);
-  plate(three, core, m.smoke, 1.46, 1.08, 0.029, 0.161, 0.009, [-0.553, 0, 0.165]);
-  const connectorAnchor = makePins(three, m, core);
-
-  const lensGeometry = new three.SphereGeometry(0.131, 32, 14, 0, Math.PI * 2, 0, Math.PI / 2);
-  lensGeometry.rotateX(Math.PI / 2);
-  lensGeometry.scale(1, 1, 0.31);
-  for (const x of [-0.984, -0.559, -0.134]) {
-    disk(three, core, m.lensRim, 0.172, 0.033, [x, -0.086, 0.186]);
-    disk(three, core, m.lensWall, 0.146, 0.017, [x, -0.086, 0.205]);
-    mesh(three, core, lensGeometry, m.lensGlass, [x, -0.086, 0.213]);
-  }
-
-  disk(three, core, m.lensWall, 0.073, 0.018, [-0.125, 0.333, 0.182]);
-  disk(three, core, m.flash, 0.063, 0.018, [-0.125, 0.333, 0.193]);
-  disk(three, core, m.pinLight, 0.030, 0.009, [1.01, 0.397, 0.164], 20);
-
-  const micHole = new three.CylinderGeometry(0.015, 0.015, 0.003, 12);
-  micHole.rotateX(Math.PI / 2);
-  for (let row = 0; row < 3; row++) {
-    for (let column = 0; column < 6; column++) {
-      mesh(three, core, micHole, m.holes, [0.291 + column * 0.068, -0.141 + row * 0.068, 0.164]);
-    }
-  }
-
-  const buttonX = 0.99;
-  const buttonY = -0.086;
-  disk(three, core, m.seam, 0.241, 0.019, [buttonX, buttonY, 0.166]);
-  disk(three, core, m.orange, 0.222, 0.039, [buttonX, buttonY, 0.183]);
-  const slope = Math.PI / 4;
-  for (let index = -6; index <= 6; index++) {
-    const offset = index * 0.026;
-    const length = 2 * Math.sqrt(0.203 ** 2 - offset ** 2);
-    const ridge = mesh(three, core, new three.BoxGeometry(length, 0.008, 0.005), m.orangeRidge, [
-      buttonX - Math.sin(slope) * offset, buttonY + Math.cos(slope) * offset, 0.204,
-    ]);
-    ridge.rotation.z = slope;
-  }
-
-  // On the Puck's long edge. The same part travels with the module into every mount.
-  const slot = plate(three, core, m.seam, 0.648, 0.103, 0.019, 0.049, 0.008, [0.79, 0.662, 0.006]);
-  slot.rotation.x = -Math.PI / 2;
-  const rocker = plate(three, core, m.thinKey, 0.591, 0.072, 0.021, 0.034, 0.008, [0.79, 0.678, 0.006]);
-  rocker.rotation.x = -Math.PI / 2;
-  const rockerAnchor = new three.Group();
-  rockerAnchor.position.z = 0.014;
-  rocker.add(rockerAnchor);
-
-  return { core, rockerAnchor, connectorAnchor };
+function ring(three, parent, material, outer, inner, thickness, bevel, position) {
+  const shape = circle(three, outer - bevel);
+  shape.holes.push(circle(three, inner));
+  return extrude(three, parent, material, shape, thickness, bevel, position);
 }
 
-function makePins(three, m, core) {
-  // The connector floor and every contact tip sit inside the rear cutout.
-  plate(three, core, m.seam, 1.30, 0.234, 0.022, 0.086, 0.006, [0, PIN_ROW_Y, -0.103]);
+function makeFace(three, group, m) {
+  const faceCutouts = [
+    roundedShape(three, WINDOW.width + 0.003, WINDOW.height + 0.003, WINDOW.radius, WINDOW.x),
+    circle(three, 0.228, 0.984, LENS_Y),
+    circle(three, 0.029, 1.015, 0.397),
+  ];
+  const mic = new three.Group();
+  group.add(mic);
+  for (let row = 0; row < 3; row++) {
+    for (let column = 0; column < 7; column++) {
+      const x = 0.260 + column * 0.061;
+      const y = -0.153 + row * 0.059;
+      faceCutouts.push(pinhole(three, x, y));
+      disk(three, mic, m.shadow, 0.016, 0.004, [x, y, 0.145], 14);
+    }
+  }
+  plate(three, group, m.chalk, 2.665, 1.235, 0.050, 0.21, 0.005, [0, 0, 0.134], faceCutouts);
+
+  const lensCutouts = LENS_X.map(x => circle(three, 0.174, x - WINDOW.x, LENS_Y));
+  lensCutouts.push(circle(three, 0.068, -0.124 - WINDOW.x, 0.329));
+  plate(three, group, m.smoke, WINDOW.width, WINDOW.height, 0.029,
+    WINDOW.radius, 0.003, [WINDOW.x, 0, 0.145], lensCutouts);
+
+  const lenses = new three.Group();
+  group.add(lenses);
+  const glass = makeGlass(three);
+  for (const x of LENS_X) {
+    ring(three, lenses, m.outerRing, 0.177, 0.156, 0.024, 0.006, [x, LENS_Y, 0.162]);
+    ring(three, lenses, m.innerRing, 0.157, 0.128, 0.020, 0.007, [x, LENS_Y, 0.158]);
+    mesh(three, lenses, glass, m.lensGlass, [x, LENS_Y, 0.142]);
+  }
+
+  const flash = [-0.124, 0.329];
+  disk(three, group, m.outerRing, 0.069, 0.012, [...flash, 0.150]);
+  disk(three, group, m.flash, 0.060, 0.013, [...flash, 0.156]);
+  ring(three, group, m.flashCenter, 0.046, 0.026, 0.006, 0.001, [...flash, 0.163]);
+  disk(three, group, m.flashCenter, 0.018, 0.004, [...flash, 0.163]);
+
+  disk(three, group, m.indicatorBezel, 0.027, 0.010, [1.015, 0.397, 0.152], 24);
+  disk(three, group, m.indicator, 0.018, 0.009, [1.015, 0.397, 0.157], 24);
+  disk(three, group, m.indicatorCenter, 0.008, 0.002, [1.015, 0.397, 0.162], 20);
+  makeRecordKey(three, group, m);
+}
+
+function makeGlass(three) {
+  const glass = new three.SphereGeometry(0.133, 48, 24, 0, Math.PI * 2, 0, Math.PI / 2);
+  glass.rotateX(Math.PI / 2);
+  glass.scale(1, 1, 0.23);
+
+  // The tint follows the curved lens, so its highlights still move with the model.
+  const positions = glass.getAttribute('position');
+  const colors = positions.clone();
+  const pupil = new three.Color(0x0a0d17);
+  const coating = new three.Color(0x242840);
+  const blue = new three.Color(0x524974);
+  const tint = new three.Color();
+  for (let index = 0; index < positions.count; index++) {
+    const x = positions.getX(index) / 0.133;
+    const y = positions.getY(index) / 0.133;
+    const radius = Math.hypot(x, y);
+    const center = Math.exp(-((radius / 0.27) ** 2));
+    const ringDistance = (radius - 0.70) / 0.26;
+    const ringTint = Math.exp(-(ringDistance ** 2));
+    const crescent = Math.max(0, (y - x) / Math.max(0.001, radius * Math.SQRT2));
+    const sheen = crescent ** 2 * (ringTint * 0.8 + center * 0.2);
+    positions.setZ(index, positions.getZ(index) + 0.004 * center);
+    tint.copy(pupil).lerp(coating, ringTint).lerp(blue, sheen);
+    colors.setXYZ(index, tint.r, tint.g, tint.b);
+  }
+  glass.setAttribute('color', colors);
+  glass.computeVertexNormals();
+  return glass;
+}
+
+function makeRecordKey(three, group, m) {
+  const x = 0.984;
+  const y = LENS_Y;
+  disk(three, group, m.shadow, 0.226, 0.012, [x, y, 0.147]);
+  ring(three, group, m.keyWell, 0.230, 0.213, 0.012, 0.003, [x, y, 0.153]);
+  extrude(three, group, m.orange, circle(three, 0.208), 0.019, 0.003, [x, y, 0.148]);
+  const angle = Math.PI / 4;
+  for (let index = -7; index <= 7; index++) {
+    const offset = index * 0.024;
+    const length = 2 * Math.sqrt(0.199 ** 2 - offset ** 2);
+    const ridge = plate(three, group, m.orangeRidge, length, 0.008, 0.008, 0.004, 0.002,
+      [x - Math.sin(angle) * offset, y + Math.cos(angle) * offset, 0.159]);
+    ridge.rotation.z = angle;
+  }
+}
+
+function makeRocker(three, group, m) {
+  const slot = plate(three, group, m.shadow, 0.638, 0.103, 0.014, 0.051, 0.004, [0.76, 0.664, 0.001]);
+  slot.rotation.x = -Math.PI / 2;
+  const key = plate(three, group, m.rocker, 0.589, 0.072, 0.017, 0.036, 0.005, [0.76, 0.680, 0.001]);
+  key.rotation.x = -Math.PI / 2;
+  disk(three, key, m.outerRing, 0.012, 0.003, [0, 0, 0.009], 16);
+  disk(three, key, m.shadow, 0.007, 0.002, [0, 0, 0.0105], 16);
   const anchor = new three.Group();
-  anchor.position.z = -0.009;
-  PIN_POSITIONS.forEach((x, index) => {
-    disk(three, core, m.gold, 0.037, 0.022, [x, PIN_ROW_Y, -0.123], 20);
-    const tip = disk(three, core, m.pinCap, 0.031, 0.011, [x, PIN_ROW_Y, -0.138], 20);
-    if (index === 4) tip.add(anchor);
-  });
+  anchor.position.set(0.05, 0, 0.012);
+  key.add(anchor);
   return anchor;
 }
 
-function makeShell(three, m, dimensions, { screenTile, dock, coverScreen = false } = {}) {
-  const { width, height, depth, radius } = dimensions;
-  const shell = new three.Group();
-  if (dock) {
-    plate(three, shell, m.graphite, width, height, depth - DOCK_DEPTH, radius, 0.052, [0, 0, -DOCK_DEPTH / 2]);
-    const cutout = roundedShape(three,
-      (dock.vertical ? CORE.height : CORE.width) + 0.043,
-      (dock.vertical ? CORE.width : CORE.height) + 0.043,
-      CORE.radius + 0.014, dock.x, dock.y,
-    );
-    plate(three, shell, m.graphiteBack, width - 0.045, height - 0.045, DOCK_DEPTH + 0.008,
-      radius - 0.015, 0.009, [0, 0, depth / 2 - DOCK_DEPTH / 2 + 0.004], cutout);
-  } else {
-    plate(three, shell, m.graphite, width, height, depth, radius, 0.058);
-    plate(three, shell, m.graphiteBack, width - 0.084, height - 0.084, 0.052,
-      radius - 0.025, 0.018, [0, 0, depth / 2 - 0.022]);
-  }
-  plate(three, shell, m.seam, width - 0.074, height - 0.074, 0.058, radius - 0.026, 0.020, [0, 0, -depth / 2 + 0.014]);
-
-  const screen = makeScreen(three, width - 0.235, height - 0.247, radius - 0.065, screenTile);
-  screen.position.z = -depth / 2 - 0.017;
-  screen.rotation.y = Math.PI;
-  shell.add(screen);
-  if (coverScreen) {
-    plate(three, shell, m.seam, width - 0.19, height - 0.25, 0.025,
-      radius - 0.045, 0.008, [0, 0, depth / 2 + 0.007]);
-    const exterior = makeScreen(three, width - 0.283, height - 0.343, radius - 0.090, undefined, true);
-    exterior.position.z = depth / 2 + 0.022;
-    shell.add(exterior);
-  }
-  return shell;
-}
-
-function addMatingPads(three, m, host, z) {
-  for (const x of PIN_POSITIONS) {
-    disk(three, host, m.gold, 0.046, 0.009, [x, PIN_ROW_Y, z], 20);
-  }
-}
-
-function mountCore(three, m, shell, core, shellDepth, spec) {
-  const dock = new three.Group();
-  dock.position.set(spec.x, spec.y, shellDepth / 2);
-  dock.rotation.z = spec.vertical ? -Math.PI / 2 : 0;
-  addMatingPads(three, m, dock, -DOCK_DEPTH + 0.003);
-  core.position.z = CORE.depth / 2 - DOCK_DEPTH;
-  dock.add(core);
-  shell.add(dock);
-}
-
-function makeFold(three, m, parent, core) {
-  const halfGap = 0.088;
-  const rearLeft = makeShell(three, m, HALF, { screenTile: 1, coverScreen: true });
-  const rearRight = makeShell(three, m, HALF, { screenTile: 0, dock: FOLD_DOCK });
-  const leftPivot = new three.Group();
-  const rightPivot = new three.Group();
-  leftPivot.position.x = -halfGap;
-  rightPivot.position.x = halfGap;
-  leftPivot.rotation.y = -0.19;
-  rightPivot.rotation.y = 0.19;
-  rearLeft.position.x = -HALF.width / 2;
-  rearRight.position.x = HALF.width / 2;
-  leftPivot.add(rearLeft);
-  rightPivot.add(rearRight);
-  parent.add(leftPivot, rightPivot);
-
-  mesh(three, parent, new three.CylinderGeometry(0.095, 0.095, HALF.height - 0.16, 24), m.graphite, [0, 0, 0.004]);
-  plate(three, parent, m.seam, 0.066, HALF.height - 0.21, 0.025, 0.027, 0.009, [0, 0, 0.087]);
-  mountCore(three, m, rearRight, core, HALF.depth, FOLD_DOCK);
-}
-
-function makeClip(three, m, parent, core) {
-  const strapWidth = 1.00;
-  const strapHeight = 4.36;
-  const strapZ = -0.165;
-  plate(three, parent, m.strap, strapWidth, strapHeight, 0.066, 0.065, 0.020, [0, 0, strapZ]);
-
-  const art = document.createElement('canvas');
-  art.width = 128;
-  art.height = 512;
-  const context = art.getContext('2d');
-  context.fillStyle = '#34312e';
-  context.fillRect(0, 0, art.width, art.height);
-  for (let row = 0; row < 64; row++) {
-    for (let column = 0; column < 16; column++) {
-      const light = (row + column) % 2 === 0;
-      context.fillStyle = light ? '#4a4641' : '#2d2b29';
-      context.fillRect(column * 8 + 1, row * 8 + 1, light ? 6 : 7, light ? 7 : 5);
-    }
-  }
-  context.strokeStyle = '#5a534b';
-  context.setLineDash([2, 3]);
-  context.beginPath();
-  context.moveTo(6, 0);
-  context.lineTo(6, art.height);
-  context.moveTo(art.width - 6, 0);
-  context.lineTo(art.width - 6, art.height);
-  context.stroke();
-
-  const texture = new three.CanvasTexture(art);
-  texture.colorSpace = three.SRGBColorSpace;
-  const fabric = new three.MeshStandardMaterial({ map: texture, roughness: 1 });
-  for (const direction of [-1, 1]) {
-    const face = texturedFace(three, fabric, strapWidth - 0.025, strapHeight - 0.025, 0.057);
-    face.position.z = strapZ + direction * 0.035;
-    if (direction < 0) face.rotation.y = Math.PI;
-    parent.add(face);
+function makeConnector(three, group, m) {
+  plate(three, group, m.shadow, 0.522, 0.098, 0.014, 0.045, 0.002, [0, PIN_ROW_Y, -0.116]);
+  const contacts = new three.Group();
+  group.add(contacts);
+  for (let index = 0; index < 8; index++) {
+    const x = (index - 3.5) * 0.057;
+    disk(three, contacts, m.gold, 0.019, 0.013, [x, PIN_ROW_Y, -0.126], 24);
+    const tip = new three.SphereGeometry(0.015, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+    tip.rotateX(-Math.PI / 2);
+    tip.scale(1, 1, 0.37);
+    mesh(three, contacts, tip, m.pinCap, [x, PIN_ROW_Y, -0.134]);
   }
 
-  plate(three, parent, m.clip, 0.79, 3.04, 0.139, 0.158, 0.041, [0, 0.055, -0.017]);
-  plate(three, parent, m.clip, 0.48, 2.66, 0.128, 0.119, 0.040, [0, 0.07, strapZ - 0.060]);
-  disk(three, parent, m.thinKey, 0.075, 0.016, [0, 1.435, 0.054], 20);
-  core.position.z = 0.183;
-  core.rotation.z = -Math.PI / 2;
-  parent.add(core);
-}
-
-function texturedFace(three, material, width, height, radius) {
-  const geometry = new three.ShapeGeometry(roundedShape(three, width, height, radius), 12);
-  const positions = geometry.getAttribute('position');
-  const uv = geometry.getAttribute('uv');
-  for (let index = 0; index < positions.count; index++) {
-    uv.setXY(index, positions.getX(index) / width + 0.5, positions.getY(index) / height + 0.5);
-  }
-  return new three.Mesh(geometry, material);
-}
-
-function makeScreen(three, width, height, radius, tile, cover = false) {
-  const art = document.createElement('canvas');
-  art.width = Math.round(768 * Math.min(width / height, 1.5));
-  art.height = 768;
-  const context = art.getContext('2d');
-  context.scale(art.width / 512, art.height / 1024);
-  if (tile !== undefined) context.transform(2, 0, 0, 1, tile * -512, 0);
-
-  const background = context.createLinearGradient(50, 0, 470, 1024);
-  background.addColorStop(0, '#10151b');
-  background.addColorStop(0.54, '#232227');
-  background.addColorStop(1, '#0b0c11');
-  context.fillStyle = background;
-  context.fillRect(0, 0, 512, 1024);
-
-  const glow = context.createRadialGradient(420, 700, 12, 420, 700, 405);
-  glow.addColorStop(0, '#f58132');
-  glow.addColorStop(0.40, '#984323');
-  glow.addColorStop(0.71, '#3b261f');
-  glow.addColorStop(1, '#171821');
-  context.fillStyle = glow;
-  context.beginPath();
-  context.moveTo(-40, 693);
-  context.bezierCurveTo(65, 485, 327, 348, 568, 475);
-  context.lineTo(568, 945);
-  context.bezierCurveTo(261, 879, 91, 986, -40, 1098);
-  context.closePath();
-  context.fill();
-
-  if (cover) {
-    context.fillStyle = '#f9e7d5';
-    context.font = '500 109px system-ui, sans-serif';
-    context.fillText('10:42', 55, 253);
-    context.fillStyle = '#dfae87';
-    context.font = '500 22px system-ui, sans-serif';
-    context.fillText('MONDAY', 64, 296);
-    context.fillStyle = '#c79b7c';
-    context.fillRect(194, 976, 124, 5);
-  }
-
-  const texture = new three.CanvasTexture(art);
-  texture.colorSpace = three.SRGBColorSpace;
-  const material = new three.MeshBasicMaterial({ map: texture, toneMapped: false });
-  return texturedFace(three, material, width, height, radius);
+  // Land the callout on the pocket edge so the row stays unobstructed.
+  const anchor = new three.Group();
+  anchor.position.set(0, PIN_ROW_Y - 0.046, -BODY.depth / 2);
+  contacts.add(anchor);
+  return anchor;
 }

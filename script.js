@@ -7,9 +7,9 @@ const modes = {
   },
   phone: {
     title: 'A phone in your hand.',
-    description: 'The Puck sits in a shallow recess inside the handset’s rails, with its volume rocker exposed along the upper edge.',
+    description: 'The Puck sits proud of the handset as a camera bump of even height, with its volume rocker on the upper edge.',
     tag: 'Handheld',
-    alt: 'Rear view of Chalk Optics seated inside the graphite handset rails',
+    alt: 'Rear view of the graphite handset with a raised, even Chalk Optics camera bump',
   },
   mini: {
     title: 'More room to work.',
@@ -19,9 +19,9 @@ const modes = {
   },
   fold: {
     title: 'Open up a bigger screen.',
-    description: 'A cover screen fills the left rear half. The Puck docks vertically on the right, leaving the center hinge clear.',
+    description: 'The main screen folds inward like a book. The cover screen and the upright Puck sit on opposite exterior halves.',
     tag: 'Foldable concept',
-    alt: 'Rear view of an open graphite foldable with a cover screen on the left, a vertical Chalk Optics Puck on the right, and the hinge between them',
+    alt: 'Exterior and interior views of an inward-folding graphite phone with an outer cover screen, vertical Puck mount, and continuous inner display',
   },
   clip: {
     title: 'Clip it on and head out.',
@@ -38,7 +38,6 @@ const modeIndex = document.querySelector('#mode-index');
 const modeTitle = document.querySelector('#mode-title');
 const modeDescription = document.querySelector('#mode-description');
 const modeTag = document.querySelector('#mode-tag');
-const modeInspector = document.querySelector('[data-model-link]');
 
 function selectMode(index) {
   const selected = modeTabs[index];
@@ -51,7 +50,7 @@ function selectMode(index) {
   });
 
   modePanel.setAttribute('aria-labelledby', selected.id);
-  modeImage.src = `assets/chalk-v3/mode-${selected.dataset.mode}.webp`;
+  modeImage.src = `assets/chalk-v4/mode-${selected.dataset.mode}.webp`;
   modeImage.alt = mode.alt;
   modeIndex.textContent = [index + 1, modeTabs.length]
     .map((number) => String(number).padStart(2, '0'))
@@ -59,7 +58,6 @@ function selectMode(index) {
   modeTitle.textContent = mode.title;
   modeDescription.textContent = mode.description;
   modeTag.textContent = mode.tag;
-  modeInspector.dataset.modelLink = selected.dataset.mode;
 }
 
 modeTabs.forEach((tab, index) => {

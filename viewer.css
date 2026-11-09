@@ -5,22 +5,14 @@
   background: var(--surface, #211e1b);
 }
 
-.viewer-mode-tabs {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 5px;
-  padding: 8px;
-  border-bottom: 1px solid var(--line, #39342e);
-}
-
 .viewer-stage {
   position: relative;
-  height: clamp(375px, 48vw, 540px);
+  height: clamp(320px, 46vw, 520px);
   isolation: isolate;
   overflow: hidden;
   background:
-    radial-gradient(ellipse at 39% 18%, #f5eee3 0%, transparent 64%),
-    linear-gradient(139deg, #e4d8ca 0%, #cfc3b6 57%, #b4a79b 100%);
+    radial-gradient(ellipse at 37% 12%, #eee7de 0%, transparent 67%),
+    linear-gradient(139deg, #ded6cd 0%, #ccc2b8 57%, #b5a79e 100%);
 }
 
 .viewer-stage canvas,
@@ -40,7 +32,7 @@
   display: block;
   opacity: 0;
   pointer-events: none;
-  touch-action: pan-y;
+  touch-action: pan-y pinch-zoom;
   user-select: none;
 }
 
@@ -61,10 +53,10 @@
 }
 
 .viewer-rocker-marker {
-  --leader: 14px;
+  --leader: 18px;
+  --anchor-offset: 50%;
   position: absolute;
   z-index: 1;
-  transform: translate(calc(-100% - var(--leader)), -50%);
   padding: 5px 8px;
   border: 1px solid #a77155;
   border-radius: 5px;
@@ -80,41 +72,31 @@
 .viewer-rocker-marker::after {
   content: "";
   position: absolute;
-  left: 100%;
-  top: 50%;
-  width: calc(var(--leader) + 1px);
-  height: 1px;
+  left: var(--anchor-offset);
+  top: 100%;
+  width: 1px;
+  height: var(--leader);
+  transform: translateX(-50%);
   background: #8c410f;
 }
 
 .viewer-rocker-marker::before {
   content: "";
   position: absolute;
-  left: calc(100% + var(--leader) - 3px);
-  top: 50%;
+  z-index: 1;
+  left: var(--anchor-offset);
+  top: calc(100% + var(--leader));
   width: 7px;
   height: 7px;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   border: 1px solid #512912;
   border-radius: 50%;
   background: #ffa357;
 }
 
-.viewer-rocker-marker.is-right { transform: translate(14px, -50%); }
-.viewer-rocker-marker.is-right::after { right: 100%; left: auto; }
-.viewer-rocker-marker.is-right::before { right: calc(100% + 11px); left: auto; }
-.viewer-rocker-marker.is-long { --leader: 46px; }
-.viewer-rocker-marker.is-below { transform: translate(-50%, var(--leader)); }
-.viewer-rocker-marker.is-below::after {
-  top: calc(-1 * var(--leader));
-  left: 50%;
-  width: 1px;
-  height: var(--leader);
-}
+.viewer-rocker-marker.is-below::after,
 .viewer-rocker-marker.is-below::before {
-  top: calc(-1 * var(--leader) - 4px);
-  left: 50%;
-  transform: translateX(-50%);
+  top: calc(0px - var(--leader));
 }
 
 .viewer-controls,
@@ -137,8 +119,7 @@
   gap: 6px;
 }
 
-.viewer-controls button,
-.viewer-mode-tabs button {
+.viewer-controls button {
   min-height: 44px;
   padding: 0 13px;
   border: 1px solid transparent;
@@ -150,10 +131,8 @@
   line-height: 1.2;
 }
 
-.viewer-controls button:not(:disabled):hover,
-.viewer-mode-tabs button:hover { background: #352920; color: #fff3e5; }
-.viewer-controls button[aria-pressed="true"],
-.viewer-mode-tabs button[aria-pressed="true"] {
+.viewer-controls button:not(:disabled):hover { background: #352920; color: #fff3e5; }
+.viewer-controls button[aria-pressed="true"] {
   border-color: #835338;
   background: #3d291d;
   color: #ffc28a;
@@ -184,10 +163,7 @@
 .viewer-static #viewer-instructions { display: none; }
 
 @media (max-width: 540px) {
-  .viewer-mode-tabs { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; }
-  .viewer-mode-tabs button { grid-column: span 2; padding-inline: 4px; font-size: 12px; }
-  .viewer-mode-tabs button:nth-last-child(-n+2) { grid-column: span 3; }
-  .viewer-stage { height: clamp(350px, 106vw, 410px); }
+  .viewer-stage { height: clamp(245px, 75vw, 360px); }
   .viewer-controls { gap: 8px; padding: 8px; }
   .viewer-presets { gap: 2px; }
   .viewer-controls button { padding-inline: 8px; font-size: 12px; }
@@ -196,7 +172,11 @@
 }
 
 @media (max-width: 420px) {
-  .viewer-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
-  .viewer-presets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .viewer-presets button { padding-inline: 3px; }
+  .viewer-presets {
+    flex: 1 1 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .viewer-presets button { padding-inline: 4px; }
+  .viewer-controls [data-view-reset] { margin-left: auto; }
 }
