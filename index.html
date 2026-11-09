@@ -8,10 +8,10 @@
   <title>Puck — One phone. Any form.</title>
   <link rel="icon" href="assets/puck-mark.svg?v=chalk" type="image/svg+xml">
   <link rel="preload" href="assets/space-grotesk.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="styles.css?v=chalk-assemblies">
-  <link rel="stylesheet" href="viewer.css?v=chalk-assemblies">
-  <script defer src="script.js?v=chalk-assemblies"></script>
-  <script type="module" src="viewer.js?v=chalk-assemblies"></script>
+  <link rel="stylesheet" href="styles.css?v=chalk-contacts">
+  <link rel="stylesheet" href="viewer.css?v=chalk-contacts">
+  <script defer src="script.js?v=chalk-contacts"></script>
+  <script type="module" src="viewer.js?v=chalk-contacts"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -49,7 +49,7 @@
       </div>
       <figure class="hero-figure">
         <div class="hero-image">
-          <img src="assets/chalk-v2/hero.webp" alt="Chalk Optics Puck with its edge-mounted volume rocker, shown seated in a graphite handset and detached" width="1536" height="1024" fetchpriority="high">
+          <img src="assets/chalk-v3/hero.webp" alt="Chalk Optics Puck with its edge-mounted volume rocker, shown fitted closely to a graphite handset and detached" width="1536" height="1024" fetchpriority="high">
         </div>
         <figcaption><span><span class="caption-dot"></span> Chalk Optics</span><a href="#product-viewer">View in 3D <span aria-hidden="true">↗</span></a></figcaption>
       </figure>
@@ -95,7 +95,7 @@
         </div>
         <div class="mode-panel" id="mode-panel" role="tabpanel" aria-labelledby="mode-tab-pocket" tabindex="0">
           <div class="mode-visual">
-            <img id="mode-image" src="assets/chalk-v2/mode-pocket.webp" alt="Detached Chalk Optics Puck with three cameras, an orange record button, and a slim rocker on its top edge" width="1080" height="720" loading="lazy">
+            <img id="mode-image" src="assets/chalk-v3/mode-pocket.webp" alt="Detached Chalk Optics Puck with three cameras, an orange record button, and a slim rocker on its top edge" width="1080" height="720" loading="lazy">
             <span class="mode-caption">Concept render</span>
           </div>
           <div class="mode-content">
@@ -117,7 +117,7 @@
       <div class="section-heading">
         <p class="section-kicker">Interactive models</p>
         <h2 id="viewer-title">Turn it around.</h2>
-        <p>Pick a configuration and drag to turn it. Choose Volume rocker to see the thin control on the Puck’s own edge.</p>
+        <p>Pick a configuration and drag to turn it. Inspect the volume rocker or flip the detached Puck to see its connector pins.</p>
       </div>
       <div class="viewer-shell">
         <div class="viewer-mode-tabs" role="group" aria-label="3D configuration">
@@ -128,13 +128,14 @@
           <button type="button" data-viewer-mode="clip" aria-pressed="false">Clip mount</button>
         </div>
         <div class="viewer-stage">
-          <img class="viewer-fallback" src="assets/chalk-v2/mode-phone.webp" alt="Rear view of Chalk Optics seated inside the graphite handset rails" width="1080" height="720" loading="lazy">
+          <img class="viewer-fallback" src="assets/chalk-v3/mode-phone.webp" alt="Rear view of Chalk Optics seated inside the graphite handset rails" width="1080" height="720" loading="lazy">
           <canvas id="puck-canvas" tabindex="-1" aria-hidden="true" aria-label="3D model of the docked Chalk Optics phone" aria-describedby="viewer-instructions"></canvas>
         </div>
         <div class="viewer-controls">
           <div class="viewer-presets" role="group" aria-label="Model angle">
             <button type="button" data-view="rear" aria-pressed="true" disabled>Rear</button>
             <button type="button" data-view="side" aria-pressed="false" disabled>Volume rocker</button>
+            <button type="button" data-view="connector" aria-pressed="false" disabled>Connector pins</button>
             <button type="button" data-view="front" aria-pressed="false" disabled>Front</button>
           </div>
           <button type="button" data-view-reset aria-label="Reset 3D view" disabled>Reset view</button>
@@ -166,8 +167,8 @@
     <p>Puck is designed around a single home for your compute, storage, battery, and cellular connection. Displays and mounts attach around it.</p>
   </div>
   <figure class="core-figure">
-    <img src="assets/chalk-v2/core-detail.webp" alt="Close-up of the orange record button, microphone perforations, and thin volume rocker on the Puck edge" width="1080" height="720" loading="lazy" decoding="async">
-    <figcaption>Industrial design concept</figcaption>
+    <img src="assets/chalk-v3/connector.webp" alt="The back of the graphite Puck showing gold connector pins in a shallow recess" width="1080" height="720" loading="lazy" decoding="async">
+    <figcaption>Rear connector · Concept render</figcaption>
   </figure>
   <dl class="core-specs">
     <div>
@@ -176,7 +177,7 @@
     </div>
     <div>
       <dt>The connection</dt>
-      <dd>A mechanical latch takes the load. The prototype will test wired video, touch, and power.</dd>
+      <dd>Recessed spring pins on the Puck meet flat contacts in the dock. A mechanical latch holds the core in place.</dd>
     </div>
     <div>
       <dt>The control</dt>

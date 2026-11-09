@@ -19,9 +19,9 @@ const modes = {
   },
   fold: {
     title: 'Open up a bigger screen.',
-    description: 'The Puck docks vertically on one rear half, leaving the center crease clear as the display opens like a book.',
+    description: 'A cover screen fills the left rear half. The Puck docks vertically on the right, leaving the center hinge clear.',
     tag: 'Foldable concept',
-    alt: 'Rear view of an open graphite foldable showing the center crease and a vertical Chalk Optics Puck on the right half',
+    alt: 'Rear view of an open graphite foldable with a cover screen on the left, a vertical Chalk Optics Puck on the right, and the hinge between them',
   },
   clip: {
     title: 'Clip it on and head out.',
@@ -51,7 +51,7 @@ function selectMode(index) {
   });
 
   modePanel.setAttribute('aria-labelledby', selected.id);
-  modeImage.src = `assets/chalk-v2/mode-${selected.dataset.mode}.webp`;
+  modeImage.src = `assets/chalk-v3/mode-${selected.dataset.mode}.webp`;
   modeImage.alt = mode.alt;
   modeIndex.textContent = [index + 1, modeTabs.length]
     .map((number) => String(number).padStart(2, '0'))

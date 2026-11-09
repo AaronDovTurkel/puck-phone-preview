@@ -1,4 +1,4 @@
-import { makeProduct } from './viewer-models.js';
+import { makeProduct } from './viewer-models.js?v=dock-connectors';
 
 const modeNames = {
   pocket: 'Screenless',
@@ -11,7 +11,7 @@ const fallbackDescriptions = {
   pocket: 'Detached Chalk Optics Puck with a smoked triple-camera window and orange record button',
   phone: 'Chalk Optics Puck docked on the back of a graphite handheld phone',
   mini: 'Chalk Optics Puck docked on a landscape mini tablet',
-  fold: 'Chalk Optics Puck docked on a folding display',
+  fold: 'Chalk Optics Puck docked on a foldable phone with an outer cover screen',
   clip: 'Chalk Optics Puck secured to a woven strap with a clip mount',
 };
 
@@ -40,10 +40,10 @@ if (viewer) {
     for (const button of modes) {
       button.setAttribute('aria-pressed', String(button.dataset.viewerMode === selectedMode));
     }
-    fallback.src = `assets/chalk-v2/mode-${mode}.webp`;
+    fallback.src = `assets/chalk-v3/mode-${mode}.webp`;
     fallback.alt = fallbackDescriptions[mode];
     canvas.setAttribute('aria-label', `3D model of Puck in ${modeNames[mode].toLowerCase()} mode`);
-    if (showModel) showModel(mode);
+    if (showModel) showModel();
     else if (viewer.classList.contains('viewer-static')) {
       status.textContent = `${modeNames[mode]} static preview. Interactive 3D is unavailable in this browser.`;
     }
@@ -111,6 +111,7 @@ if (viewer) {
 
     let model;
     let activeView = 'rear';
+    let inspectingConnector = false;
     let frame = 0;
     let pointer = null;
     let contextLost = false;
@@ -135,20 +136,9 @@ if (viewer) {
       return standalone ? 'Face view.' : 'Rear view.';
     }
 
-    function moveTo(view) {
-      const angle = { rear, side: model.rockerView, front }[view];
-      if (!angle) return;
-
-      const currentYaw = model.group.rotation.y;
-      const delta = three.MathUtils.euclideanModulo(angle.yaw - currentYaw + Math.PI, 2 * Math.PI) - Math.PI;
-      Object.assign(target, angle, { yaw: currentYaw + delta });
-      activeView = view;
-      updateControls();
-      status.textContent = `${modeNames[selectedMode]} model. ${viewLabel(view)}`;
-      requestFrame();
-    }
-
-    function switchModel(mode) {
+    function moveTo(view, snap = false) {
+      const connector = view === 'connector';
+      const mode = connector ? 'pocket' : selectedMode;
       try {
         if (!products.has(mode)) products.set(mode, makeProduct(three, mode));
       } catch {
@@ -157,21 +147,47 @@ if (viewer) {
         return;
       }
 
-      if (model) scene.remove(model.group);
-      model = products.get(mode);
-      scene.add(model.group);
-      model.group.rotation.set(rear.pitch, rear.yaw, rear.roll, 'YXZ');
-      shadow.position.set(model.width * 0.035, -model.height / 2 - 0.12, 0);
-      shadow.scale.set(model.width / 2.96, Math.max(0.7, model.width / 3.6), 1);
-      moveTo('rear');
+      const next = products.get(mode);
+      const angle = { rear, side: next.rockerView, connector: next.connectorView, front }[view];
+      if (!angle) {
+        status.textContent = 'This detail view is unavailable.';
+        return;
+      }
+
+      if (next !== model) {
+        if (model) {
+          next.group.rotation.copy(model.group.rotation);
+          scene.remove(model.group);
+        } else {
+          next.group.rotation.set(rear.pitch, rear.yaw, rear.roll, 'YXZ');
+        }
+        model = next;
+        scene.add(model.group);
+        shadow.position.set(model.width * 0.035, -model.height / 2 - 0.12, 0);
+        shadow.scale.set(model.width / 2.96, Math.max(0.7, model.width / 3.6), 1);
+      }
+
+      const currentYaw = model.group.rotation.y;
+      const delta = three.MathUtils.euclideanModulo(angle.yaw - currentYaw + Math.PI, 2 * Math.PI) - Math.PI;
+      Object.assign(target, angle, { yaw: currentYaw + delta });
+      if (snap) model.group.rotation.set(target.pitch, target.yaw, target.roll, 'YXZ');
+      activeView = view;
+      inspectingConnector = connector;
+      marker.textContent = connector ? 'Docking pins' : 'Volume rocker';
+      marker.dataset.detail = connector ? 'connector' : 'rocker';
+      canvas.setAttribute('aria-label', connector ? 'Detached Puck back with gold docking pins' : `3D model of Puck in ${modeNames[mode].toLowerCase()} mode`);
+      updateControls();
       setInteractive(!contextLost);
-      if (contextLost) status.textContent = `${modeNames[mode]} static preview while the 3D view reconnects.`;
+      if (contextLost) status.textContent = `${modeNames[selectedMode]} static preview while the 3D view reconnects.`;
+      else if (connector) status.textContent = 'Detached Puck back. Gold docking pins highlighted.';
+      else status.textContent = `${modeNames[selectedMode]} model. ${viewLabel(view)}`;
+      requestFrame();
     }
 
     function frameModel(rotation) {
       const tanHalfFov = Math.tan(camera.fov * Math.PI / 360);
       const horizontal = tanHalfFov * camera.aspect / 1.13;
-      const vertical = tanHalfFov / 1.20;
+      const vertical = tanHalfFov / (inspectingConnector ? 1.42 : 1.20);
       const halfWidth = model.width / 2;
       const halfHeight = model.height / 2;
       const halfDepth = (model.depth || 0.7) / 2;
@@ -201,20 +217,32 @@ if (viewer) {
     }
 
     function positionMarker(rotation) {
-      marker.hidden = activeView !== 'side' || Math.max(
+      const anchor = { side: model.rockerAnchor, connector: model.connectorAnchor }[activeView];
+      marker.hidden = !anchor || Math.max(
         Math.abs(rotation.y - target.yaw),
         Math.abs(rotation.x - target.pitch),
       ) > 0.21;
       if (marker.hidden) return;
 
-      model.rockerAnchor.getWorldPosition(markerPosition).project(camera);
+      anchor.getWorldPosition(markerPosition).project(camera);
       const x = (markerPosition.x + 1) * 50;
       const y = (1 - markerPosition.y) * 50;
       const leftSpace = stage.clientWidth * x / 100;
       const rightSpace = stage.clientWidth - leftSpace;
-      const isRight = rightSpace > 118 && (x >= 50 || leftSpace < 118);
+      const isConnector = activeView === 'connector';
+      const isRight = !isConnector && rightSpace > 118 && (x >= 50 || leftSpace < 118);
       marker.classList.toggle('is-right', isRight);
-      marker.classList.toggle('is-long', !isRight && x > 65 && leftSpace > 155);
+      marker.classList.toggle('is-long', !isConnector && !isRight && x > 65 && leftSpace > 155);
+      marker.classList.toggle('is-below', isConnector);
+      if (isConnector) {
+        const stageHeight = stage.clientHeight;
+        const visibleHeight = Math.min(stageHeight / 1.42, stage.clientWidth * model.height / model.width / 1.13);
+        const pinY = stageHeight * y / 100;
+        const leader = Math.min(stageHeight - pinY - 31, stageHeight / 2 + visibleHeight / 2 - pinY + 17);
+        marker.style.setProperty('--leader', `${Math.max(22, leader)}px`);
+      } else {
+        marker.style.removeProperty('--leader');
+      }
       marker.style.left = `${x}%`;
       marker.style.top = `${y}%`;
     }
@@ -262,6 +290,10 @@ if (viewer) {
       updateControls();
     }
 
+    function announceCustomView() {
+      status.textContent = inspectingConnector ? 'Detached Puck. Custom view.' : `${modeNames[selectedMode]} model. Custom view.`;
+    }
+
     canvas.addEventListener('pointerdown', (event) => {
       if (!event.isPrimary || event.button !== 0 || pointer) return;
 
@@ -290,7 +322,7 @@ if (viewer) {
 
     function endDrag(event) {
       if (!pointer || pointer.id !== event.pointerId) return;
-      if (pointer.moved) status.textContent = `${modeNames[selectedMode]} model. Custom view.`;
+      if (pointer.moved) announceCustomView();
       pointer = null;
       canvas.classList.remove('is-dragging');
     }
@@ -318,7 +350,7 @@ if (viewer) {
       beginCustomView();
       target.yaw += rotation[0];
       target.pitch = three.MathUtils.clamp(target.pitch + rotation[1], -0.72, 0.72);
-      status.textContent = `${modeNames[selectedMode]} model. Custom view.`;
+      announceCustomView();
       requestFrame();
     });
 
@@ -344,12 +376,12 @@ if (viewer) {
     canvas.addEventListener('webglcontextrestored', () => {
       contextLost = false;
       scene.environment = makeStudioLight(three, renderer);
-      switchModel(selectedMode);
+      moveTo('rear', true);
       resize();
     });
 
-    switchModel(selectedMode);
-    showModel = switchModel;
+    showModel = () => moveTo('rear', true);
+    showModel();
     new ResizeObserver(resize).observe(stage);
     resize();
   }

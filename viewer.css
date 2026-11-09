@@ -104,6 +104,18 @@
 .viewer-rocker-marker.is-right::after { right: 100%; left: auto; }
 .viewer-rocker-marker.is-right::before { right: calc(100% + 11px); left: auto; }
 .viewer-rocker-marker.is-long { --leader: 46px; }
+.viewer-rocker-marker.is-below { transform: translate(-50%, var(--leader)); }
+.viewer-rocker-marker.is-below::after {
+  top: calc(-1 * var(--leader));
+  left: 50%;
+  width: 1px;
+  height: var(--leader);
+}
+.viewer-rocker-marker.is-below::before {
+  top: calc(-1 * var(--leader) - 4px);
+  left: 50%;
+  transform: translateX(-50%);
+}
 
 .viewer-controls,
 .viewer-notes {
@@ -181,4 +193,10 @@
   .viewer-controls button { padding-inline: 8px; font-size: 12px; }
   .viewer-notes { gap: 5px 12px; font-size: 12px; }
   .viewer-rocker-marker { padding-inline: 5px; font-size: 10px; }
+}
+
+@media (max-width: 420px) {
+  .viewer-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+  .viewer-presets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .viewer-presets button { padding-inline: 3px; }
 }
