@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111116">
+  <meta name="description" content="Puck is a modular phone concept. Carry the core screenless, snap on a handheld display, or dock into a mini tablet.">
+  <title>Puck — One phone. Any form.</title>
+  <link rel="icon" href="assets/puck-mark.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/space-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="top">
+    <div class="header-inner page-width">
+      <a class="brand" href="#top" aria-label="Puck home">
+        <img src="assets/puck-mark.svg" alt="" width="29" height="29">
+        <span>puck<span class="brand-stop">.</span></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="site-menu" data-menu-toggle>
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+      <nav class="site-menu" id="site-menu" aria-label="Main navigation">
+        <a href="#modes">The lineup</a>
+        <a href="#core">The core</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <a class="button button-small button-primary header-cta" href="#rewards">Explore rewards</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero page-width" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="campaign-state"><span></span> Concept campaign</p>
+        <h1 id="hero-title">One phone.<br>Any form.</h1>
+        <p class="hero-description">A pocket-sized phone core with a screen you can swap, fold, or leave at home.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#modes">Explore the lineup <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3.5v12m-5-5 5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+          <button class="button button-quiet" type="button" data-share><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12V3m-3.4 3.4L10 3l3.4 3.4M5 9.5H4v6a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-6h-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Share</button>
+        </div>
+        <p class="share-status" id="share-status" role="status"></p>
+      </div>
+      <figure class="hero-figure">
+        <div class="hero-image">
+          <img src="assets/hero.webp" alt="Concept render of the Puck phone core floating next to a landscape touchscreen with lilac wallpaper" width="1536" height="1024" fetchpriority="high">
+          <span class="hero-image-index" aria-hidden="true">PUCK / 001</span>
+        </div>
+        <figcaption><span><span class="caption-dot"></span> Puck core + mini display</span><span>Concept render</span></figcaption>
+      </figure>
+    </section>
+
+    <div class="section-nav-wrap">
+      <nav class="section-nav page-width" aria-label="Campaign sections">
+        <a href="#modes" aria-current="location">Lineup</a>
+        <a href="#story">Story</a>
+        <a href="#core">Core</a>
+        <a href="#rewards">Rewards</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+
+    <section class="modes-section section-shell" id="modes" aria-labelledby="modes-title">
+      <div class="section-heading modes-heading">
+        <div>
+          <p class="section-kicker">The lineup</p>
+          <h2 id="modes-title">Pick your form.</h2>
+        </div>
+        <p>The core stays with you. Switch displays or mounts as your day changes.</p>
+      </div>
+      <div class="mode-explorer">
+        <div class="mode-tabs" role="tablist" aria-label="Explore Puck configurations">
+          <button type="button" role="tab" id="mode-tab-pocket" data-mode="pocket" aria-selected="true" aria-controls="mode-panel">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="3.5"/><circle cx="12" cy="12" r="2"/></svg> Screenless
+          </button>
+          <button type="button" role="tab" id="mode-tab-phone" data-mode="phone" aria-selected="false" aria-controls="mode-panel" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 18h2"/></svg> Handheld
+          </button>
+          <button type="button" role="tab" id="mode-tab-mini" data-mode="mini" aria-selected="false" aria-controls="mode-panel" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M17.5 11v2"/></svg> Mini tablet
+          </button>
+          <button type="button" role="tab" id="mode-tab-fold" data-mode="fold" aria-selected="false" aria-controls="mode-panel" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7-2v16l7 2 7-2V3l-7 2Zm0 0v16"/></svg> Foldable
+          </button>
+          <button type="button" role="tab" id="mode-tab-clip" data-mode="clip" aria-selected="false" aria-controls="mode-panel" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 12 5.7-5.7a3 3 0 0 1 4.3 4.2l-7.5 7.6a4.2 4.2 0 1 1-6-6l7.7-7.8M8 12a1.3 1.3 0 0 0 1.8 1.8l5.7-5.7"/></svg> Clip mount
+          </button>
+        </div>
+        <div class="mode-panel" id="mode-panel" role="tabpanel" aria-labelledby="mode-tab-pocket" tabindex="0">
+          <div class="mode-visual">
+            <img id="mode-image" src="assets/mode-pocket.webp" alt="Concept render of the screenless Puck phone core" width="768" height="512" loading="lazy">
+            <span class="mode-caption">Concept render</span>
+          </div>
+          <div class="mode-content">
+            <span class="mode-index" id="mode-index">01 / 05</span>
+            <div>
+              <h3 id="mode-title">The pocket core.</h3>
+              <p id="mode-description">Take a call or capture a voice note with earbuds and a physical button. The core stays connected while the screen stays home.</p>
+            </div>
+            <span class="mode-tag" id="mode-tag">Screenless carry</span>
+          </div>
+        </div>
+      </div>
+    </section>
+<section class="story-section section-shell" id="story" aria-labelledby="story-title">
+  <div class="story-grid">
+    <div class="section-heading">
+      <p class="section-kicker">The idea</p>
+      <h2 id="story-title">Take your phone.<br>Choose your screen.</h2>
+    </div>
+    <div class="story-copy">
+      <p>Your phone number, apps, and files live on a pocket-sized core. The screen clips on when you need it. At the desk, dock into a mini tablet and pick up the draft you started on the way home.</p>
+      <p>Slip on a handheld screen for everyday use. Clip the core to your bag and take calls on earbuds. A foldable display could give the same phone more room when it opens.</p>
+    </div>
+  </div>
+</section>
+
+<section class="core-section section-shell" id="core" aria-labelledby="core-title">
+  <div class="section-heading">
+    <p class="section-kicker">Inside Puck</p>
+    <h2 id="core-title">Everything that makes it yours.</h2>
+    <p>Puck is designed around a single home for your compute, storage, battery, and cellular connection. Displays and mounts attach around it.</p>
+  </div>
+  <figure class="core-figure">
+    <img src="assets/core-detail.webp" alt="Concept render of the Puck core with a metal button, violet status light, and attachment rail" width="1536" height="1024" fetchpriority="low" decoding="async">
+    <figcaption>Industrial design concept</figcaption>
+  </figure>
+  <dl class="core-specs">
+    <div>
+      <dt>The core</dt>
+      <dd>One place for your phone number, apps, files, and ongoing tasks.</dd>
+    </div>
+    <div>
+      <dt>The connection</dt>
+      <dd>A mechanical latch takes the load. The prototype will test wired video, touch, and power.</dd>
+    </div>
+    <div>
+      <dt>The control</dt>
+      <dd>A physical button and earbuds make calls and voice notes possible with the screen detached.</dd>
+    </div>
+  </dl>
+</section>
+
+<section class="rewards-section section-shell" id="rewards" aria-labelledby="rewards-title">
+  <div class="section-heading">
+    <p class="section-kicker">Campaign preview</p>
+    <h2 id="rewards-title">Build your setup.</h2>
+    <p>Explore three proposed kits. Contents and prices are illustrative while the hardware is in development.</p>
+  </div>
+  <div class="rewards-grid">
+    <article class="reward-card">
+      <p class="reward-label">Go screenless</p>
+      <h3>Core Kit</h3>
+      <p class="reward-price">$199</p>
+      <p>For a lighter pocket and calls on your earbuds.</p>
+      <ul class="reward-items">
+        <li>Puck compute core</li>
+        <li>Clip attachment</li>
+      </ul>
+      <button class="reward-button" type="button" data-pledge="core">Preview reward</button>
+    </article>
+    <article class="reward-card reward-featured">
+      <p class="reward-label">Daily carry</p>
+      <h3>Everyday Kit</h3>
+      <p class="reward-price">$299</p>
+      <p>For a familiar handheld phone you can strip back for a walk.</p>
+      <ul class="reward-items">
+        <li>Puck compute core</li>
+        <li>Handheld touchscreen</li>
+        <li>Clip attachment</li>
+      </ul>
+      <button class="reward-button" type="button" data-pledge="everyday">Preview reward</button>
+    </article>
+    <article class="reward-card">
+      <p class="reward-label">More room</p>
+      <h3>Studio Kit</h3>
+      <p class="reward-price">$449</p>
+      <p>For switching between a pocket screen and a small tablet.</p>
+      <ul class="reward-items">
+        <li>Puck compute core</li>
+        <li>Handheld and mini-tablet touchscreens</li>
+        <li>Clip attachment</li>
+      </ul>
+      <button class="reward-button" type="button" data-pledge="studio">Preview reward</button>
+    </article>
+  </div>
+</section>
+
+<section class="roadmap-section section-shell" id="roadmap" aria-labelledby="roadmap-title">
+  <div class="section-heading">
+    <p class="section-kicker">Development roadmap</p>
+    <h2 id="roadmap-title">From concept to carry.</h2>
+    <p>The first build has one job. Make a task feel continuous as the screen changes.</p>
+  </div>
+  <ol class="roadmap-list">
+    <li class="roadmap-step roadmap-current" aria-current="step">
+      <p class="roadmap-status">Current stage</p>
+      <h3>Concept</h3>
+      <p>Define the core, the attachments, and a screenless interaction worth carrying.</p>
+    </li>
+    <li class="roadmap-step">
+      <h3>Prototype</h3>
+      <p>Build a working Android donor rig and move one live workflow between screen sizes.</p>
+    </li>
+    <li class="roadmap-step">
+      <h3>Validation</h3>
+      <p>Test attachment wear, touch, charging, secure unlock, and calls across screen swaps.</p>
+    </li>
+    <li class="roadmap-step">
+      <h3>Production planning</h3>
+      <p>Confirm components, carrier compatibility, costs, and delivery estimates before taking pledges.</p>
+    </li>
+  </ol>
+</section>
+
+<section class="faq-section section-shell" id="faq" aria-labelledby="faq-title">
+  <div class="faq-grid">
+    <div class="section-heading">
+      <p class="section-kicker">FAQ</p>
+      <h2 id="faq-title">Good questions.</h2>
+    </div>
+    <div class="faq-list">
+      <details>
+        <summary>What can I do with the screen off?</summary>
+        <p>The proposed screenless mode pairs a physical button with Bluetooth earbuds for calls and voice notes. The prototype will test those actions while the phone is locked and the screen is detached.</p>
+      </details>
+      <details>
+        <summary>What happens to my apps when I swap screens?</summary>
+        <p>Your apps and files stay on the core. The first prototype will test reopening the same draft on a different screen. Handoffs for other apps will depend on how they handle display changes.</p>
+      </details>
+      <details>
+        <summary>Will the foldable screen be in the first kit?</summary>
+        <p>The first kits focus on a clip, a handheld screen, and a mini-tablet screen. The foldable is a concept for a later attachment.</p>
+      </details>
+      <details>
+        <summary>Will Puck work with my carrier?</summary>
+        <p>Carrier and region support will depend on the radio hardware, testing, and certification. Compatibility details are still open.</p>
+      </details>
+      <details>
+        <summary>Can I place an order today?</summary>
+        <p>Puck is at the concept stage. The renders and rewards show what we are exploring. You can preview a tier here. Pledges and payments open only if the project launches a live campaign.</p>
+      </details>
+    </div>
+  </div>
+</section>
+    <section class="closing" aria-labelledby="closing-title">
+      <div class="closing-inner page-width">
+        <img src="assets/puck-mark.svg" alt="" width="46" height="46">
+        <h2 id="closing-title">What would you carry?</h2>
+        <a class="button button-primary" href="#rewards">Compare the kits</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner page-width">
+      <a class="brand" href="#top" aria-label="Puck, back to top"><img src="assets/puck-mark.svg" alt="" width="26" height="26"><span>puck<span class="brand-stop">.</span></span></a>
+      <p>Independent concept campaign. Product imagery is AI-generated.</p>
+      <a class="back-top" href="#top">Back to top <span aria-hidden="true">↑</span></a>
+    </div>
+  </footer>
+
+  <dialog class="reward-dialog" id="reward-dialog" aria-labelledby="reward-dialog-title">
+    <form method="dialog" class="dialog-close"><button type="submit" aria-label="Close reward preview">×</button></form>
+    <p class="section-kicker">Reward preview</p>
+    <h2 id="reward-dialog-title"></h2>
+    <p class="dialog-price" id="reward-dialog-price"></p>
+    <p id="reward-dialog-description"></p>
+    <ul class="reward-items" id="reward-dialog-items"></ul>
+    <p class="dialog-note">Concept pricing in USD. Saving a kit records your choice on this device.</p>
+    <button class="button button-primary" id="reward-save" type="button">Save this kit</button>
+    <p id="reward-status" role="status"></p>
+  </dialog>
+</body>
+</html>
