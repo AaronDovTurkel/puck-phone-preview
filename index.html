@@ -3,20 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#111116">
+  <meta name="theme-color" content="#151413">
   <meta name="description" content="Puck is a modular phone concept. Carry the core screenless, snap on a handheld display, or dock into a mini tablet.">
   <title>Puck — One phone. Any form.</title>
-  <link rel="icon" href="assets/puck-mark.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/puck-mark.svg?v=chalk" type="image/svg+xml">
   <link rel="preload" href="assets/space-grotesk.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="styles.css">
-  <script defer src="script.js"></script>
+  <link rel="stylesheet" href="styles.css?v=chalk">
+  <link rel="stylesheet" href="viewer.css">
+  <script defer src="script.js?v=chalk"></script>
+  <script type="module" src="viewer.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header" id="top">
     <div class="header-inner page-width">
       <a class="brand" href="#top" aria-label="Puck home">
-        <img src="assets/puck-mark.svg" alt="" width="29" height="29">
+        <img src="assets/puck-mark.svg?v=chalk" alt="" width="29" height="29">
         <span>puck<span class="brand-stop">.</span></span>
       </a>
       <button class="menu-toggle" type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="site-menu" data-menu-toggle>
@@ -24,6 +26,7 @@
       </button>
       <nav class="site-menu" id="site-menu" aria-label="Main navigation">
         <a href="#modes">The lineup</a>
+        <a href="#product-viewer">3D view</a>
         <a href="#core">The core</a>
         <a href="#roadmap">Roadmap</a>
         <a href="#faq">FAQ</a>
@@ -46,16 +49,16 @@
       </div>
       <figure class="hero-figure">
         <div class="hero-image">
-          <img src="assets/hero.webp" alt="Concept render of the Puck phone core floating next to a landscape touchscreen with lilac wallpaper" width="1536" height="1024" fetchpriority="high">
-          <span class="hero-image-index" aria-hidden="true">PUCK / 001</span>
+          <img src="assets/chalk/hero.webp" alt="Chalk Optics Puck with its black triple-camera window and orange record button, shown docked on a graphite handset and detached" width="1536" height="1024" fetchpriority="high">
         </div>
-        <figcaption><span><span class="caption-dot"></span> Puck core + mini display</span><span>Concept render</span></figcaption>
+        <figcaption><span><span class="caption-dot"></span> Chalk Optics</span><a href="#product-viewer">View in 3D <span aria-hidden="true">↗</span></a></figcaption>
       </figure>
     </section>
 
     <div class="section-nav-wrap">
       <nav class="section-nav page-width" aria-label="Campaign sections">
         <a href="#modes" aria-current="location">Lineup</a>
+        <a href="#product-viewer">3D view</a>
         <a href="#story">Story</a>
         <a href="#core">Core</a>
         <a href="#rewards">Rewards</a>
@@ -92,7 +95,7 @@
         </div>
         <div class="mode-panel" id="mode-panel" role="tabpanel" aria-labelledby="mode-tab-pocket" tabindex="0">
           <div class="mode-visual">
-            <img id="mode-image" src="assets/mode-pocket.webp" alt="Concept render of the screenless Puck phone core" width="768" height="512" loading="lazy">
+            <img id="mode-image" src="assets/chalk/mode-pocket.webp" alt="Detached Chalk Optics Puck with a smoked triple-camera window and orange record button" width="1080" height="720" loading="lazy">
             <span class="mode-caption">Concept render</span>
           </div>
           <div class="mode-content">
@@ -106,6 +109,33 @@
         </div>
       </div>
     </section>
+
+    <section class="viewer-section section-shell" id="product-viewer" data-product-viewer aria-labelledby="viewer-title">
+      <div class="section-heading">
+        <p class="section-kicker">Interactive model</p>
+        <h2 id="viewer-title">Turn it around.</h2>
+        <p>Drag to rotate the phone. Choose Volume rocker for a close look at the thin control on the handset’s left rail.</p>
+      </div>
+      <div class="viewer-shell">
+        <div class="viewer-stage">
+          <img class="viewer-fallback" src="assets/chalk/mode-phone.webp" alt="Rear view of the graphite handset with its thin side volume rocker and docked Chalk Optics core" width="1080" height="720" loading="lazy">
+          <canvas id="puck-canvas" tabindex="-1" aria-hidden="true" aria-label="3D model of the docked Chalk Optics phone" aria-describedby="viewer-instructions"></canvas>
+        </div>
+        <div class="viewer-controls">
+          <div class="viewer-presets" role="group" aria-label="Phone view">
+            <button type="button" data-view="rear" aria-pressed="true" disabled>Rear</button>
+            <button type="button" data-view="side" aria-pressed="false" disabled>Volume rocker</button>
+            <button type="button" data-view="front" aria-pressed="false" disabled>Front</button>
+          </div>
+          <button type="button" data-view-reset aria-label="Reset 3D view" disabled>Reset view</button>
+        </div>
+      </div>
+      <div class="viewer-notes">
+        <p id="viewer-instructions">Drag the model or focus it and use the arrow keys.</p>
+        <p class="viewer-status" role="status"></p>
+      </div>
+    </section>
+
 <section class="story-section section-shell" id="story" aria-labelledby="story-title">
   <div class="story-grid">
     <div class="section-heading">
@@ -126,7 +156,7 @@
     <p>Puck is designed around a single home for your compute, storage, battery, and cellular connection. Displays and mounts attach around it.</p>
   </div>
   <figure class="core-figure">
-    <img src="assets/core-detail.webp" alt="Concept render of the Puck core with a metal button, violet status light, and attachment rail" width="1536" height="1024" fetchpriority="low" decoding="async">
+    <img src="assets/chalk/core-detail.webp" alt="Close-up of the orange record button, microphone perforations, and smooth graphite sidewall" width="1080" height="720" loading="lazy" decoding="async">
     <figcaption>Industrial design concept</figcaption>
   </figure>
   <dl class="core-specs">
@@ -140,7 +170,7 @@
     </div>
     <div>
       <dt>The control</dt>
-      <dd>A physical button and earbuds make calls and voice notes possible with the screen detached.</dd>
+      <dd>The orange record button stays with the core. A slim rocker on the handset rail handles volume when docked.</dd>
     </div>
   </dl>
 </section>
@@ -249,7 +279,7 @@
 </section>
     <section class="closing" aria-labelledby="closing-title">
       <div class="closing-inner page-width">
-        <img src="assets/puck-mark.svg" alt="" width="46" height="46">
+        <img src="assets/puck-mark.svg?v=chalk" alt="" width="46" height="46">
         <h2 id="closing-title">What would you carry?</h2>
         <a class="button button-primary" href="#rewards">Compare the kits</a>
       </div>
@@ -258,7 +288,7 @@
 
   <footer class="site-footer">
     <div class="footer-inner page-width">
-      <a class="brand" href="#top" aria-label="Puck, back to top"><img src="assets/puck-mark.svg" alt="" width="26" height="26"><span>puck<span class="brand-stop">.</span></span></a>
+      <a class="brand" href="#top" aria-label="Puck, back to top"><img src="assets/puck-mark.svg?v=chalk" alt="" width="26" height="26"><span>puck<span class="brand-stop">.</span></span></a>
       <p>Independent concept campaign. Product imagery is AI-generated.</p>
       <a class="back-top" href="#top">Back to top <span aria-hidden="true">↑</span></a>
     </div>

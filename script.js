@@ -3,31 +3,31 @@ const modes = {
     title: 'The pocket core.',
     description: 'Take a call or capture a voice note with earbuds and a physical button. The core stays connected while the screen stays home.',
     tag: 'Screenless carry',
-    alt: 'Concept render of the screenless Puck phone core',
+    alt: 'Detached Chalk Optics Puck with a smoked triple-camera window and orange record button',
   },
   phone: {
     title: 'A phone in your hand.',
     description: 'Dock the core into a handheld touchscreen for texting, directions, and the apps you reach for on the move.',
     tag: 'Handheld',
-    alt: 'Concept render of the Puck handheld touchscreen',
+    alt: 'Rear view of the graphite handset with its thin side volume rocker and docked Chalk Optics core',
   },
   mini: {
     title: 'More room to work.',
     description: 'Move the same core into a mini-tablet display and give your drafts, reading, and video more room.',
     tag: 'Mini tablet',
-    alt: 'Concept render of the Puck mini-tablet touchscreen',
+    alt: 'Graphite mini tablet with the Chalk Optics Puck docked on the back',
   },
   fold: {
     title: 'Open up a bigger screen.',
-    description: 'A future foldable attachment could slip into a pocket and open like a book when you want more space.',
+    description: 'The Puck docks vertically on one rear half, leaving the center crease clear as the display opens like a book.',
     tag: 'Foldable concept',
-    alt: 'Concept render of the Puck foldable display partially open',
+    alt: 'Rear view of an open graphite foldable showing the center crease and a vertical Chalk Optics Puck on the right half',
   },
   clip: {
     title: 'Clip it on and head out.',
     description: 'Attach the core to a bag strap or belt with a clip that uses the same mount as the display modules.',
     tag: 'Clip attachment',
-    alt: 'Concept render of the Puck core with its clip attachment',
+    alt: 'Chalk Optics Puck attached to a charcoal strap with a graphite clip',
   },
 };
 
@@ -50,7 +50,7 @@ function selectMode(index) {
   });
 
   modePanel.setAttribute('aria-labelledby', selected.id);
-  modeImage.src = `assets/mode-${selected.dataset.mode}.webp`;
+  modeImage.src = `assets/chalk/mode-${selected.dataset.mode}.webp`;
   modeImage.alt = mode.alt;
   modeIndex.textContent = [index + 1, modeTabs.length]
     .map((number) => String(number).padStart(2, '0'))
